@@ -136,7 +136,7 @@ export function getSearchFiles(unresolvedLinks?: boolean): SearchFile[]{
  * @returns TFile array of starred files.
  */
 export function getStarredFiles(): TFile[]{
-    if(app.internalPlugins.plugins.starred.enabled){
+    if(this.app.internalPlugins.getPluginById('starred')){
         const starredItems = app.internalPlugins.plugins.starred.instance.items
         const starredFiles: TFile[] = []
 

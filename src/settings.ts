@@ -57,7 +57,7 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     fontColorType: 'default', 
     fontWeight: 600,
     maxResults: 5,
-    showStarredFiles: app.internalPlugins.plugins.starred.enabled ? true : false,
+    showStarredFiles: app.internalPlugins.getPluginById('starred') ? true : false,
     showPath: true,
     selectionHighlight: 'default',
     showShortcuts: true,
@@ -122,7 +122,7 @@ export class HomeTabSettingTab extends PluginSettingTab{
             .then((settingEl) => this.addResetButton(settingEl, 'maxResults'))
 		containerEl.createEl('h2', {text: 'Appearance'});
         
-        if(app.internalPlugins.plugins.starred.enabled){
+        if(app.internalPlugins.getPluginById('starred')){
             new Setting(containerEl)
             .setName('Show starred files')
             .setDesc(createFragment((f) => {

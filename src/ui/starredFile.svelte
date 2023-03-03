@@ -32,7 +32,7 @@
             handleFileOpening(file, true)
         }
         else if ((e.target as HTMLElement).classList.contains('home-tab-starred-file-remove-button')){
-            if(this.app.internalPlugins.plugins.starred.enabled){
+            if(this.app.internalPlugins.getPluginById('starred')){
                 this.app.internalPlugins.plugins.starred.instance.toggleFileStar(file)
             }
             else{
