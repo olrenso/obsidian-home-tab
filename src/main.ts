@@ -16,7 +16,6 @@ declare module 'obsidian'{
 		}
 	}
 	interface Plugin_2{
-		enabled: boolean
 	}
 	interface StarredPlugin extends Plugin_2{
 		instance: {
@@ -62,7 +61,7 @@ export default class HomeTab extends Plugin {
 
 		// Wait for all plugins to load before check if the starred plugin is enabled
 		this.app.workspace.onLayoutReady(() => {
-			if(this.app.internalPlugins.getPluginById('starred').enabled){
+			if(this.app.internalPlugins.getPluginById('starred')){
 				// Get and store starred files
 				starredFiles.set(getStarredFiles())
 				// Update stored starred files list when a file is starred or unstarred
