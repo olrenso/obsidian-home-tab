@@ -1,11 +1,11 @@
 <script lang="ts">
     import { File, FilePieChart, FileText, FileAudio, FileImage, FileVideo, X as DeleteIcon} from 'lucide-svelte'
-    import { type WorkspaceLeaf, type TFile, type WorkspaceSplit, Notice } from 'obsidian';
+    import { type TFile, Notice, Keymap, type PaneType, App } from 'obsidian';
     import { getFileTypeFromExtension } from 'src/utils/getFileTypeUtils';
     import { pluginSettingsStore } from 'src/store';
 	import type { HomeTabSettings } from 'src/settings';
 
-    export let leaf: WorkspaceLeaf
+    export let app: App
     export let file: TFile
 
     let pluginSettings: HomeTabSettings
@@ -15,32 +15,22 @@
     const filename = file.basename.length > 40 ? file.basename.slice(0,37) + '...' : file.basename
     const fileType = getFileTypeFromExtension(file.extension)
 
-    function handleFileOpening(file: TFile, newTab?: boolean){
-        if(newTab){
-            const leafParent: WorkspaceSplit = leaf.parent
-            const leafCount = leafParent.children.length
-
-            app.workspace.createLeafInParent(leafParent, leafCount + 1).openFile(file)
-        }
-        else{
-            leaf.openFile(file)
-        }
+    function handleFileOpening(file: TFile, newTab?: boolean | PaneType){
+        const leaf = app.workspace.getLeaf(newTab)
+        leaf.openFile(file)
     }
 
     function handleMouseClick(e: MouseEvent, file: TFile): void{
-        if(e.button === 1){
-            handleFileOpening(file, true)
-        }
-        else if ((e.target as HTMLElement).classList.contains('home-tab-starred-file-remove-button')){
-            if(this.app.internalPlugins.getPluginById('starred')){
-                this.app.internalPlugins.plugins.starred.instance.toggleFileStar(file)
+        if ((e.target as HTMLElement).classList.contains('home-tab-starred-file-remove-button')){
+            if(app.internalPlugins.getPluginById('starred')){
+                app.internalPlugins.plugins.starred.instance.toggleFileStar(file)
             }
             else{
-                new Notice("Starred plugin is disabled")
+                new Notice("Starred plugin is not enabled")
             }
         }
-        else{
-            handleFileOpening(file, e.ctrlKey)
+        else if(e.button != 2){
+            handleFileOpening(file, Keymap.isModEvent(e))
         }
     }
 </script>

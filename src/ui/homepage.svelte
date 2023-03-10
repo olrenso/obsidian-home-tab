@@ -21,14 +21,13 @@
 
     const vaultAdapter = app.vault.adapter
     const gradientUniqueId = view.leaf.activeTime
-    const starredPlugin = app.internalPlugins.plugins.starred
+    const isStarredPluginEnabled = app.internalPlugins.getPluginById('starred') ? true : false
 
 </script>
   
 <main class="home-tab">
     <div class="home-tab-wordmark-container">
         {#if !(pluginSettings.logoType === 'none')}
-            <!-- <div class="home-tab-logo" style="margin-right: calc({pluginSettings.fontSize} * {(pluginSettings.logoScale)/5})"> -->
             <div class="home-tab-logo" style="margin-right: calc({pluginSettings.fontSize}/5)">
                 {#if pluginSettings.logoType === 'default'}
                     <!-- Obsidian logo -->
@@ -81,10 +80,10 @@
     
     <SearchBar {view}/>
 
-    {#if pluginSettings.showStarredFiles && starredFileList && starredPlugin.enabled}
+    {#if pluginSettings.showStarredFiles && starredFileList && isStarredPluginEnabled}
         <div class="home-tab-starred-files-container">
             {#each starredFileList as file (file.path)}
-                <StarredFile {file} leaf={view.leaf}/>
+                <StarredFile {file} app={view.leaf.app}/>
             {/each}
         </div>
     {/if}
@@ -103,15 +102,7 @@
     }
     .home-tab-wordmark h1{
         margin: unset;
-    }
-
-    /* .home-tab-logo{
-        display: block;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    } */
-    
+    }    
     .home-tab-starred-files-container{
         width: 65%;
         min-width: 250px;

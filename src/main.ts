@@ -15,11 +15,10 @@ declare module 'obsidian'{
 			starred: StarredPlugin
 		}
 	}
-	interface Plugin_2{
-	}
 	interface StarredPlugin extends Plugin_2{
 		instance: {
 			items: StarredFile[]
+			toggleFileStar: Function
 		}
 	}
 	interface StarredFile{
@@ -34,6 +33,7 @@ declare module 'obsidian'{
 		rebuildView: Function
 		parent: WorkspaceSplit
 		activeTime: number
+		app: App
 	}
 	interface WorkspaceSplit{
 		children: WorkspaceLeaf[]
