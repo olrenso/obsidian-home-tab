@@ -1,6 +1,6 @@
 {
 	"name": "home-tab",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "A browser-like search tab for your local files.",
 	"main": "main.js",
 	"scripts": {
