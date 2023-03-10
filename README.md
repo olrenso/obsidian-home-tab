@@ -1,5 +1,5 @@
-# Obsidian home tab
-Obsidian home tab is an Obsidian plugin that adds a browser-like home default new tab with a search bar and a grid of starred files.
+# Obsidian Home tab
+Obsidian Home tab is an [Obsidian](https://obsidian.md/) plugin that adds a browser-like home default new tab with a search bar and a grid of starred files.
 
 You can search any local file in your vault, both markdown notes and attachments.
 
