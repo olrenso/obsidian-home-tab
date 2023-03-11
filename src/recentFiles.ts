@@ -1,11 +1,16 @@
-import { Component, type App, TFile } from "obsidian";
+import { Component, type App, TFile, TAbstractFile } from "obsidian";
 import { get } from "svelte/store";
 import type HomeTab from "./main";
 import type { HomeTabSettings } from "./settings";
-import { pluginSettingsStore, recentFiles } from "./store";
+import { recentFiles } from "./store";
 
 export interface recentFile{
     file: TFile,
+    timestamp: number,
+}
+
+export interface recentFileStored{
+    filepath: string,
     timestamp: number,
 }
 
@@ -18,15 +23,15 @@ export class RecentFileManager extends Component{
         super()
         this.app = app
         this.plugin = plugin
-        // this.pluginSettings = this.plugin.settings
-        pluginSettingsStore.subscribe(settings => this.pluginSettings = settings)
-
+        this.pluginSettings = plugin.settings
     }
     
     onload(): void {
-        this.registerEvent(this.app.workspace.on('file-open', (file) => this.updateRecentFiles(file))) // Save file to recent files list on opening
-        this.registerEvent(this.app.vault.on('delete', (file) => file instanceof TFile ? this.removeRecentFile(file) : null)) // Remove recent file if deleted
-        this.registerEvent(this.app.vault.on('rename', (file) => file instanceof TFile ? this.onFileRename() : null)) // Update displayed name on file rename
+        this.registerEvent(this.app.workspace.on('file-open', async (file) => {this.updateRecentFiles(file); await this.storeRecentFiles()})) // Save file to recent files list on opening
+        this.registerEvent(this.app.vault.on('delete', async (file) => {file instanceof TFile ? this.removeRecentFile(file) : null; await this.storeRecentFiles()})) // Remove recent file if deleted
+        this.registerEvent(this.app.vault.on('rename',  (file) => file instanceof TFile ? this.onFileRename() : null)) // Update displayed name on file rename
+
+        this.loadStoredRecentFiles()
     }
 
     private updateRecentFiles(openedFile: TFile | null): void{
@@ -83,5 +88,36 @@ export class RecentFileManager extends Component{
         // Trigger refresh of svelte component, not sure if it's the best approach
         recentFiles.update((filesArray) => filesArray)
     }
+
+    private async storeRecentFiles(): Promise<void>{
+        if(this.plugin.settings.storeRecentFile){
+            let storeObj: recentFileStored[] = []
+            get(recentFiles).forEach((item) => storeObj.push({
+                filepath: item.file.path, // Store only the path instead of the entire TFile instance
+                timestamp: item.timestamp
+            }))
+            this.plugin.settings.recentFilesStore = storeObj
+            await this.plugin.saveData(this.plugin.settings)
+        }
+    }
+
+    private loadStoredRecentFiles(): void{
+        if(this.plugin.settings.storeRecentFile){
+            let filesToLoad: recentFile[] = []
+            this.app.workspace.onLayoutReady(() => { 
+                this.plugin.settings.recentFilesStore.forEach((item) => {
+                    let file: TAbstractFile | null = this.app.vault.getAbstractFileByPath(item.filepath)
+                    if(file && file instanceof TFile){
+                        filesToLoad.push({
+                            file: file,
+                            timestamp: item.timestamp
+                        })
+                    }
+                })
+                recentFiles.set(filesToLoad)
+            })
+        }
+    }
+
 }
 

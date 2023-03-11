@@ -53,7 +53,6 @@ export default class HomeTab extends Plugin {
 		
 		await this.loadSettings();
 		this.addSettingTab(new HomeTabSettingTab(this.app, this))
-
 		this.registerView(VIEW_TYPE, (leaf) => new HomeTabView(leaf, this));		
 
 		// Replace new tabs with home tab view
@@ -85,11 +84,11 @@ export default class HomeTab extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
 	}
 
 	async saveSettings() {
-		await this.saveData(this.settings);
+		await this.saveData(this.settings)
 		pluginSettingsStore.update(() => this.settings)
 	}
 

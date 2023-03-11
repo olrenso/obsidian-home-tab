@@ -6,7 +6,7 @@ import ImageFileSuggester from './suggester/imageSuggester'
 import cssUnitValidator from './utils/cssUnitValidator'
 import isLink from './utils/isLink'
 import fontSuggester from './suggester/fontSuggester'
-import { RecentFileManager } from './recentFiles'
+import { RecentFileManager, type recentFileStored } from './recentFiles'
 
 type ColorChoices = 'default' | 'accentColor' | 'custom'
 type LogoChoiches = 'default' | 'imagePath' | 'imageLink' | 'lucideIcon' | 'none'
@@ -39,11 +39,13 @@ export interface HomeTabSettings extends ObjectKeys{
     showStarredFiles: boolean
     showRecentFiles: boolean
     maxRecentFiles: number
+    storeRecentFile: boolean
     showPath: boolean
     selectionHighlight: ColorChoices
     showShortcuts: boolean
     markdownOnly: boolean
     unresolvedLinks: boolean
+    recentFilesStore: recentFileStored[]
 }
 
 export const DEFAULT_SETTINGS: HomeTabSettings = {
@@ -63,11 +65,13 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     showStarredFiles: app.internalPlugins.getPluginById('starred') ? true : false,
     showRecentFiles: false,
     maxRecentFiles: 5,
+    storeRecentFile: true,
     showPath: true,
     selectionHighlight: 'default',
     showShortcuts: true,
     markdownOnly: false,
     unresolvedLinks: false,
+    recentFilesStore: []
 }
 
 export class HomeTabSettingTab extends PluginSettingTab{
@@ -126,7 +130,7 @@ export class HomeTabSettingTab extends PluginSettingTab{
                 .onChange((value) => {this.plugin.settings.maxResults = value; this.plugin.saveSettings()}))
             .then((settingEl) => this.addResetButton(settingEl, 'maxResults'))
 
-		containerEl.createEl('h2', {text: 'Appearance'});
+		containerEl.createEl('h2', {text: 'Files display'});
         
         if(app.internalPlugins.getPluginById('starred')){
             new Setting(containerEl)
@@ -156,6 +160,13 @@ export class HomeTabSettingTab extends PluginSettingTab{
 
         if(this.plugin.settings.showRecentFiles){
             new Setting(containerEl)
+            .setName('Store last recent files')
+            .setDesc('Remember the recent files of the previous session.')
+            .addToggle((toggle) => toggle
+                .setValue(this.plugin.settings.storeRecentFile)
+                .onChange((value) => {this.plugin.settings.storeRecentFile = value; this.plugin.saveSettings()}))
+
+            new Setting(containerEl)
                 .setName('Recent files')
                 .setDesc('Set how many recent files display.')
                 .addSlider((slider) => slider
@@ -165,6 +176,8 @@ export class HomeTabSettingTab extends PluginSettingTab{
                     .onChange((value) => {this.plugin.recentFileManager.onNewMaxListLenght(value); this.plugin.settings.maxRecentFiles = value; this.plugin.saveSettings()}))
                 .then((settingEl) => this.addResetButton(settingEl, 'maxRecentFiles'))
         }
+
+        containerEl.createEl('h2', {text: 'Appearance'});
 
         const logoTypeSetting = new Setting(containerEl)
             .setName('Logo')
