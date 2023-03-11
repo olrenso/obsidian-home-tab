@@ -6,6 +6,7 @@ import ImageFileSuggester from './suggester/imageSuggester'
 import cssUnitValidator from './utils/cssUnitValidator'
 import isLink from './utils/isLink'
 import fontSuggester from './suggester/fontSuggester'
+import { RecentFileManager } from './recentFiles'
 
 type ColorChoices = 'default' | 'accentColor' | 'custom'
 type LogoChoiches = 'default' | 'imagePath' | 'imageLink' | 'lucideIcon' | 'none'
@@ -36,6 +37,8 @@ export interface HomeTabSettings extends ObjectKeys{
     fontWeight: number
     maxResults: number
     showStarredFiles: boolean
+    showRecentFiles: boolean
+    maxRecentFiles: number
     showPath: boolean
     selectionHighlight: ColorChoices
     showShortcuts: boolean
@@ -58,6 +61,8 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     fontWeight: 600,
     maxResults: 5,
     showStarredFiles: app.internalPlugins.getPluginById('starred') ? true : false,
+    showRecentFiles: false,
+    maxRecentFiles: 5,
     showPath: true,
     selectionHighlight: 'default',
     showShortcuts: true,
@@ -120,6 +125,7 @@ export class HomeTabSettingTab extends PluginSettingTab{
                 .setDynamicTooltip()
                 .onChange((value) => {this.plugin.settings.maxResults = value; this.plugin.saveSettings()}))
             .then((settingEl) => this.addResetButton(settingEl, 'maxResults'))
+
 		containerEl.createEl('h2', {text: 'Appearance'});
         
         if(app.internalPlugins.getPluginById('starred')){
@@ -134,6 +140,30 @@ export class HomeTabSettingTab extends PluginSettingTab{
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.showStarredFiles)
                 .onChange((value) => {this.plugin.settings.showStarredFiles = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
+        }
+
+        new Setting(containerEl)
+            .setName('Show recent files')
+            .setDesc('Display recent files under the search bar.')
+            .addToggle((toggle) => toggle
+                .setValue(this.plugin.settings.showRecentFiles)
+                .onChange((value) => {this.plugin.settings.showRecentFiles = value; this.plugin.saveSettings(); this.display(); this.plugin.refreshOpenViews(); 
+                    if(!this.plugin.recentFileManager){
+                        this.plugin.recentFileManager = new RecentFileManager(this.app, this.plugin)
+                    }
+                    value ? this.plugin.recentFileManager.load() : this.plugin.recentFileManager.unload() // Detach recentFileManager instance
+                }))
+
+        if(this.plugin.settings.showRecentFiles){
+            new Setting(containerEl)
+                .setName('Recent files')
+                .setDesc('Set how many recent files display.')
+                .addSlider((slider) => slider
+                    .setValue(this.plugin.settings.maxRecentFiles)
+                    .setLimits(1, 25, 1)
+                    .setDynamicTooltip()
+                    .onChange((value) => {this.plugin.recentFileManager.onNewMaxListLenght(value); this.plugin.settings.maxRecentFiles = value; this.plugin.saveSettings()}))
+                .then((settingEl) => this.addResetButton(settingEl, 'maxRecentFiles'))
         }
 
         const logoTypeSetting = new Setting(containerEl)

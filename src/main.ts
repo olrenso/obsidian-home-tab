@@ -3,6 +3,7 @@ import { getStarredFiles } from 'src/utils/getFilesUtils';
 import { HomeTabView, VIEW_TYPE } from 'src/homeView';
 import { HomeTabSettingTab, DEFAULT_SETTINGS, type HomeTabSettings } from './settings'
 import { pluginSettingsStore, starredFiles } from './store'
+import { RecentFileManager } from './recentFiles';
 
 declare module 'obsidian'{
 	interface App{
@@ -45,19 +46,27 @@ declare module 'obsidian'{
 
 export default class HomeTab extends Plugin {
 	settings: HomeTabSettings;
+	recentFileManager: RecentFileManager
 	
 	async onload() {
-		console.log('Loading obsidian-home-tab plugin')
+		console.log('Loading home-tab plugin')
 		
 		await this.loadSettings();
 		this.addSettingTab(new HomeTabSettingTab(this.app, this))
 
 		this.registerView(VIEW_TYPE, (leaf) => new HomeTabView(leaf, this));		
 
+		// Replace new tabs with home tab view
 		this.registerEvent(this.app.workspace.on('layout-change', () => this.activateView()))
+		// Refocus search bar on leaf change
 		this.registerEvent(this.app.workspace.on('active-leaf-change', (leaf: WorkspaceLeaf) => {if(leaf.view instanceof HomeTabView){leaf.view.focusSearchbar()}}))
 
 		pluginSettingsStore.set(this.settings) // Store the settings for the svelte components
+
+		if(this.settings.showRecentFiles){
+			this.recentFileManager = new RecentFileManager(app, this)
+			this.recentFileManager.load()
+		}
 
 		// Wait for all plugins to load before check if the starred plugin is enabled
 		this.app.workspace.onLayoutReady(() => {
@@ -68,11 +77,11 @@ export default class HomeTab extends Plugin {
 				this.registerEvent(this.app.internalPlugins.getPluginById('starred').instance.on('changed', () => starredFiles.set(getStarredFiles())))
 			}
 		})
-
 	}
 
 	onunload() {
 		this.app.workspace.detachLeavesOfType(VIEW_TYPE);
+		this.recentFileManager.unload()
 	}
 
 	async loadSettings() {

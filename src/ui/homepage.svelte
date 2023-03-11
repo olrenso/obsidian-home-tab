@@ -1,21 +1,29 @@
 <script lang="ts">
     import SearchBar from './searchBar.svelte';
-    import StarredFile from './starredFile.svelte'
     import type { HomeTabSettings } from 'src/settings';
-    import { pluginSettingsStore, starredFiles} from '../store'
+    import { pluginSettingsStore, recentFiles, starredFiles} from '../store'
     import { getIcon, type TFile } from 'obsidian'
     import type { HomeTabView } from '../homeView';
+	import type { recentFile } from 'src/recentFiles';
+	import StarredFiles from './starredFiles.svelte';
+	import RecentFiles from './recentFiles.svelte';
     
     export let view: HomeTabView
 
+    let plugin = view.plugin
+    
     let starredFileList: TFile[]
     let pluginSettings: HomeTabSettings
-
+    let recentFileList: recentFile[]
+    
     pluginSettingsStore.subscribe((settings) => {
         pluginSettings = settings
     
         if(pluginSettings.showStarredFiles){
             starredFiles.subscribe((files) => starredFileList = files)
+        }
+        if(pluginSettings.showRecentFiles){
+            recentFiles.subscribe((files) => recentFileList = files)
         }
     })
 
@@ -81,11 +89,11 @@
     <SearchBar {view}/>
 
     {#if pluginSettings.showStarredFiles && starredFileList && isStarredPluginEnabled}
-        <div class="home-tab-starred-files-container">
-            {#each starredFileList as file (file.path)}
-                <StarredFile {file} app={view.leaf.app}/>
-            {/each}
-        </div>
+        <StarredFiles {starredFileList} {view} {pluginSettings}/>
+    {/if}
+
+    {#if pluginSettings.showRecentFiles && plugin.recentFileManager && recentFileList.length > 0}
+        <RecentFiles {recentFileList} {view} {pluginSettings} recentFileManager={plugin.recentFileManager}/>
     {/if}
 </main>
   
@@ -103,15 +111,4 @@
     .home-tab-wordmark h1{
         margin: unset;
     }    
-    .home-tab-starred-files-container{
-        width: 65%;
-        min-width: 250px;
-        max-width: 900px;
-        display: flex;
-        align-items: baseline;
-        justify-content: center;
-        padding-top: 30px;
-        flex-wrap: wrap;
-        margin: auto;
-    }
 </style>

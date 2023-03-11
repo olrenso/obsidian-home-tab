@@ -134,7 +134,6 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
     }
 
     updateSearchfilesList(file:TFile, oldPath?: string){
-        console.log('updateSearchFileList')
         this.app.metadataCache.onCleanCache(() => {
             if(oldPath){
                 this.files.splice(this.files.findIndex((f) => f.path === oldPath),1)
