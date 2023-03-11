@@ -45,4 +45,6 @@ The plugin may not work with (or interfere with) other plugins that replace the 
 
 ---
 # How to install
-This plugin is currently in beta and not available through the obsidian plugin manager. You can install it manually or from [BRAT](https://github.com/TfTHacker/obsidian42-brat) using the following link `https://github.com/olrenso/Obsidian-home-tab` or `olrenso/Obsidian-home-tab`.
+The plugin is available directly from the [Obsidian plugin browser](https://obsidian.md/plugins?id=home-tab).
+Alternatively, you can install with [BRAT](https://github.com/TfTHacker/obsidian42-brat) by using the following links: `https://github.com/olrenso/Obsidian-home-tab` or `olrenso/Obsidian-home-tab`.
+
