@@ -13,7 +13,7 @@ export class IconSelectionModal extends Modal{
         this.onSubmit = onSubmit
     }
 
-    onOpen(){
+    onOpen(): void{
         const { contentEl } = this
 
         contentEl.createEl('h1', {text: 'Set a custom icon'})
@@ -71,12 +71,13 @@ export class IconSelectionModal extends Modal{
                 .setButtonText("Set icon")
                 .setCta()
                 .onClick(() => {
-                    this.close()
                     this.icon ? this.onSubmit(this.icon as LucideIcon) : null
+                    this.close()
                 }))
     }
 
-    onClose() {
+    onClose(): void {
+        this.icon = undefined
         let { contentEl } = this;
         contentEl.empty();
     }

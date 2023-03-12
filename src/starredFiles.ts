@@ -57,7 +57,6 @@ export class starredFileManager extends Component{
         this.starredFileStore.update((filesArray) => {
             const itemIndex = filesArray.findIndex((item) => item.file === file)
             filesArray[itemIndex].iconId = iconId
-            console.log(filesArray)
             return filesArray
         })
 
