@@ -67,6 +67,8 @@ export class RecentFileManager extends Component{
             filesArray.splice(filesArray.findIndex((recentFile) => recentFile.file == file), 1)
             return filesArray
         })
+
+        this.storeRecentFiles()
     }
 
     onNewMaxListLenght(newValue: number){
@@ -82,6 +84,8 @@ export class RecentFileManager extends Component{
             filesArray.splice(filesArray.length - number, number)
             return filesArray
         })
+        
+        this.storeRecentFiles()
     }
 
     private onFileRename(): void{

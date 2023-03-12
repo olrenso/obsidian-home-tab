@@ -7,6 +7,8 @@ import cssUnitValidator from './utils/cssUnitValidator'
 import isLink from './utils/isLink'
 import fontSuggester from './suggester/fontSuggester'
 import { RecentFileManager, type recentFileStored } from './recentFiles'
+import { starredFileManager, type starredFileStore } from './starredFiles'
+import { starredFiles } from './store'
 
 type ColorChoices = 'default' | 'accentColor' | 'custom'
 type LogoChoiches = 'default' | 'imagePath' | 'imageLink' | 'lucideIcon' | 'none'
@@ -46,6 +48,7 @@ export interface HomeTabSettings extends ObjectKeys{
     markdownOnly: boolean
     unresolvedLinks: boolean
     recentFilesStore: recentFileStored[]
+    starredFileStore: starredFileStore[]
 }
 
 export const DEFAULT_SETTINGS: HomeTabSettings = {
@@ -71,7 +74,8 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     showShortcuts: true,
     markdownOnly: false,
     unresolvedLinks: false,
-    recentFilesStore: []
+    recentFilesStore: [],
+    starredFileStore: [],
 }
 
 export class HomeTabSettingTab extends PluginSettingTab{
@@ -135,15 +139,15 @@ export class HomeTabSettingTab extends PluginSettingTab{
         if(app.internalPlugins.getPluginById('starred')){
             new Setting(containerEl)
             .setName('Show starred files')
-            .setDesc(createFragment((f) => {
-                f.appendText('Show starred files under the search bar.')
-                f.createEl('br')
-                f.createEl('b', {text: 'Note: '})
-                f.appendText('It may be necessary to restart Obsidian.')
-            }))
+            .setDesc('Show starred files under the search bar.')
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.showStarredFiles)
-                .onChange((value) => {this.plugin.settings.showStarredFiles = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
+                .onChange((value) => {this.plugin.settings.showStarredFiles = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()
+                    if(value && !this.plugin.starredFileManager){
+                        this.plugin.starredFileManager = new starredFileManager(this.app, this.plugin, starredFiles)
+                    }
+                    value ? this.plugin.starredFileManager.load() : this.plugin.starredFileManager.unload() // Detach starredFileManager instance
+                }))
         }
 
         new Setting(containerEl)
@@ -151,8 +155,8 @@ export class HomeTabSettingTab extends PluginSettingTab{
             .setDesc('Display recent files under the search bar.')
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.showRecentFiles)
-                .onChange((value) => {this.plugin.settings.showRecentFiles = value; this.plugin.saveSettings(); this.display(); this.plugin.refreshOpenViews(); 
-                    if(!this.plugin.recentFileManager){
+                .onChange((value) => {this.plugin.settings.showRecentFiles = value; this.plugin.saveSettings(); this.display(); this.plugin.refreshOpenViews()
+                    if(value && !this.plugin.recentFileManager){
                         this.plugin.recentFileManager = new RecentFileManager(this.app, this.plugin)
                     }
                     value ? this.plugin.recentFileManager.load() : this.plugin.recentFileManager.unload() // Detach recentFileManager instance

@@ -1,20 +1,24 @@
 <script lang="ts">
-	import type { TFile } from "obsidian";
+	import { Menu, type TFile } from "obsidian";
 	import type { HomeTabView } from "src/homeView";
 	import type { RecentFileManager, recentFile } from "src/recentFiles";
 	import type { HomeTabSettings } from "src/settings";
-	import FileDisplayItem from "./fileDisplayItem.svelte";
+	import FileDisplayItem from "./svelteComponents/fileDisplayItem.svelte";
 
     export let recentFileList: recentFile[]
     export let view: HomeTabView
     export let pluginSettings: HomeTabSettings
     export let recentFileManager: RecentFileManager
     const app = view.leaf.app
-    const removeBtnAriaLabel = "Hide file"
 
-    const onItemRemove = (file: TFile) => {
-        recentFileManager.removeRecentFile(file)
-    }
+    let selectedFile: TFile
+
+    let contextualMenu: Menu = new Menu()
+            .addItem((item) => item
+                .setTitle('Hide file')
+                .setIcon('eye-off')
+                .onClick(() => recentFileManager.removeRecentFile(selectedFile)))
+            .setUseNativeMenu(app.vault.config.nativeMenus)
 </script>
 
 <div class="home-tab-recent-files-container">
@@ -23,7 +27,8 @@
     </div>
     <div class="home-tab-recent-files-wrapper">
         {#each recentFileList as recentFile (recentFile.file.path)}
-            <FileDisplayItem file={recentFile.file} {app} {pluginSettings} {onItemRemove} {removeBtnAriaLabel}/>
+            <FileDisplayItem file={recentFile.file} {app} {pluginSettings} {contextualMenu}
+            on:itemMenu={(e) => selectedFile = e.detail.file}/>
         {/each}
     </div>
 </div>

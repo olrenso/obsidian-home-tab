@@ -7,12 +7,13 @@
 	import type { recentFile } from 'src/recentFiles';
 	import StarredFiles from './starredFiles.svelte';
 	import RecentFiles from './recentFiles.svelte';
+	import type { customStarredFile } from 'src/starredFiles';
     
     export let view: HomeTabView
 
     let plugin = view.plugin
     
-    let starredFileList: TFile[]
+    let starredFileList: customStarredFile[]
     let pluginSettings: HomeTabSettings
     let recentFileList: recentFile[]
     
@@ -89,7 +90,7 @@
     <SearchBar {view}/>
 
     {#if pluginSettings.showStarredFiles && starredFileList && isStarredPluginEnabled}
-        <StarredFiles {starredFileList} {view} {pluginSettings}/>
+        <StarredFiles {starredFileList} {view} {pluginSettings} starredFileManager={plugin.starredFileManager}/>
     {/if}
 
     {#if pluginSettings.showRecentFiles && plugin.recentFileManager && recentFileList.length > 0}
