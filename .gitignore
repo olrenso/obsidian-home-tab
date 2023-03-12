@@ -28,3 +28,4 @@ data.json
 .esbuild.config.mjs
 version-bump.mjs
 tsconfig.json
+versions.json
