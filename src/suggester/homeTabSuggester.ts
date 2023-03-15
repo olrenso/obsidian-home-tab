@@ -279,7 +279,7 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
     openFile(file: TFile, newTab?: boolean): void{
         if(newTab){
             this.app.workspace.createLeafInTabGroup().openFile(file)
-            this.inputEl.value = ''
+            // this.inputEl.value = ''
         }
         else{
             this.view.leaf.openFile(file);
