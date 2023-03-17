@@ -24,7 +24,7 @@
 
     background: var(--background-modifier-form-field);
 
-    border: 1px solid var(--background-modifier-border);
+    border: var(--input-border-width) solid var(--background-modifier-border);
     border-top-color: var(--background-secondary);
     border-radius: 0 0 var(--input-radius) var(--input-radius);
 }

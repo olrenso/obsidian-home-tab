@@ -49,11 +49,17 @@
     }
     .home-tab-recent-files-wrapper{
         display: flex;
-        min-width: 250px;
+        /* min-width: 250px; */
         max-width: 900px;
-        align-items: baseline;
+        align-items: center;
         justify-content: center;
         flex-wrap: wrap;
         margin: auto;
+    }
+
+    @media(max-width: 600px){
+        .home-tab-recent-files-container{
+            padding-bottom: 75px;
+        }
     }
 </style>

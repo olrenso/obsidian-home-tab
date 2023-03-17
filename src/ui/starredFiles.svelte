@@ -54,7 +54,7 @@
         flex-wrap: wrap;
         
         width: 65%;
-        min-width: 250px;
+        /* min-width: 150px; */
         max-width: 900px;
         
         padding-top: 30px;

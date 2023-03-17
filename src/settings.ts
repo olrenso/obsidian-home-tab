@@ -233,15 +233,13 @@ export class HomeTabSettingTab extends PluginSettingTab{
                     if(this.plugin.settings.logoType === 'imagePath'){
                         new ImageFileSuggester(this.app, text.inputEl, {
                             isScrollable: true,
-                            style: `max-height: 200px;
-                                    width: fit-content`
+                            style: `max-height: 200px`
                         })
                     }
                     else if(this.plugin.settings.logoType === 'lucideIcon'){
                         new iconSuggester(this.app, text.inputEl, {
                             isScrollable: true,
-                            style: `max-height: 200px;
-                                    width: fit-content`}, 
+                            style: `max-height: 200px`}, 
                             true)
                     }
                     text

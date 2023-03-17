@@ -124,5 +124,21 @@
     }
     .home-tab-wordmark h1{
         margin: unset;
-    }    
+    }
+
+    @media(max-width: 600px){
+        .home-tab-wordmark-container{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .home-tab-wordmark{
+            text-align: center;
+        }
+    }
+    @media(max-height: 1000px){
+        .home-tab:not(.embedded) .home-tab-wordmark-container{
+            padding-top: 10px;
+        }
+    }
 </style>

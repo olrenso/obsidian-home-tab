@@ -35,7 +35,7 @@ export class IconSelectionModal extends Modal{
             .addSearch((text) => {
                 new iconSuggester(this.app, text.inputEl, {
                     isScrollable: true,
-                    style: `max-height: 200px; width: fit-content`}, 
+                    style: `max-height: 200px`}, 
                     true)
 
                 text

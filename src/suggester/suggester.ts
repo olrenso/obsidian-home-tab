@@ -227,7 +227,13 @@ export abstract class PopoverTextInputSuggester<T> extends TextInputSuggester<T>
         this.popperWrapper = this.suggestionParentContainer.createDiv('popper-wrapper')
         // Render element on top of modals
         this.popperWrapper.style.zIndex = 'var(--layer-menu)' 
-        this.popperInstance = createPopper(this.inputEl, this.popperWrapper, {
+
+        const isPhone = document.body.clientWidth < 600 ? true : false
+        // On phones place popover on bottom of the screen
+        const popperReference = isPhone ? document.body : this.inputEl
+        if(isPhone){this.popperWrapper.style.width = '100%'}
+        
+        this.popperInstance = createPopper(popperReference, this.popperWrapper, {
             placement: 'bottom-start',
             modifiers: [{
                 name: 'offset',
