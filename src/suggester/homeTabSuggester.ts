@@ -1,13 +1,14 @@
 import type Fuse from 'fuse.js'
-import { normalizePath, TAbstractFile, TFile, type App } from 'obsidian'
+import { normalizePath, TAbstractFile, TFile, View, type App } from 'obsidian'
 import { DEFAULT_FUSE_OPTIONS, FileFuzzySearch, type SearchFile } from './fuzzySearch'
 import type HomeTab from '../main'
-import type { HomeTabView } from 'src/homeView'
+import type { HomeTabSearchBar } from 'src/homeView'
 import { generateSearchFile,  getParentFolderFromPath,  getSearchFiles, getUnresolvedMarkdownFiles } from 'src/utils/getFilesUtils'
 import { TextInputSuggester } from './suggester'
 import { addLucideIcon } from 'src/utils/htmlUtils'
 import { generateHotkeySuggestion } from 'src/utils/htmlUtils'
 import { isValidExtension, isValidFileType, type FileExtension, type FileType } from 'src/utils/getFileTypeUtils'
+import { get } from 'svelte/store'
 
 declare module 'obsidian'{
     interface MetadataCache{
@@ -19,14 +20,15 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
     private files: SearchFile[]
     private fuzzySearch: FileFuzzySearch
 
+    private view: View
     private plugin: HomeTab
-    private view: HomeTabView
+    private searchBar: HomeTabSearchBar
 
     private activeExt: FileType | FileExtension | null
     private activeExtEl: HTMLElement
 
-    constructor(app: App, plugin: HomeTab, view: HomeTabView, inputEl: HTMLInputElement, suggestionContainer: HTMLElement) {
-        super(app, inputEl, suggestionContainer, {
+    constructor(app: App, plugin: HomeTab, view: View, searchBar: HomeTabSearchBar) {
+        super(app, get(searchBar.searchBarEl), get(searchBar.suggestionContainerEl), {
                 containerClass: 'home-tab-suggestion-container',
                 // suggestionClass: 'home-tab-suggestion', 
                 suggestionItemClass: 'suggestion-item mod-complex',
@@ -41,8 +43,8 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
                 })
         this.plugin = plugin
         this.view = view
-        this.view.activeExtEl.subscribe(element => this.activeExtEl = element)
-
+        this.searchBar = searchBar
+        this.searchBar.activeExtEl.subscribe(element => this.activeExtEl = element)
 
         this.app.metadataCache.onCleanCache(() => {
             this.plugin.settings.markdownOnly ? this.files = this.filterSearchFileArray('markdown', getSearchFiles(this.plugin.settings.unresolvedLinks)) : this.files = getSearchFiles(this.plugin.settings.unresolvedLinks)

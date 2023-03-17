@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { Menu, type TFile } from "obsidian";
-	import type { HomeTabView } from "src/homeView";
+	import { Menu, View, type TFile } from "obsidian";
 	import type { RecentFileManager, recentFile } from "src/recentFiles";
 	import type { HomeTabSettings } from "src/settings";
 	import FileDisplayItem from "./svelteComponents/fileDisplayItem.svelte";
 
+    export let view: View
     export let recentFileList: recentFile[]
-    export let view: HomeTabView
     export let pluginSettings: HomeTabSettings
     export let recentFileManager: RecentFileManager
     const app = view.leaf.app

@@ -1,14 +1,17 @@
 <script lang="ts">
-    import type { HomeTabView } from "../homeView";
+    import type { HomeTabSearchBar } from "../homeView";
 
-    export let view: HomeTabView
-    const searchBarEl = view.searchBarEl
-    const activeExtEl = view.activeExtEl
-    const container = view.suggestionContainerEl
+    export let HomeTabSearchBar: HomeTabSearchBar
+    export let embedded: boolean = false
+    const searchBarEl = HomeTabSearchBar.searchBarEl
+    const activeExtEl = HomeTabSearchBar.activeExtEl
+    const container = HomeTabSearchBar.suggestionContainerEl
 </script>
 
 <div class="home-tab-searchbar-container" bind:this={$container}>
-    <div class="home-tab-searchbar">
+    <div class="home-tab-searchbar"
+        class:embedded={embedded}
+        style:width={embedded ? "85%" : "50%"}>
         <div class='nav-file-tag home-tab-suggestion-file-tag hide' bind:this={$activeExtEl}>PNG</div>
         <input type="search" spellcheck="false" placeholder="Type to start search..." bind:this={$searchBarEl}>
     </div>
@@ -16,12 +19,14 @@
 
 <style>
     .home-tab-searchbar-container{
-        margin-top: 50px;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
     }
     
     .home-tab-searchbar{
         display: flex;
-        width: 50%;
+        /* width: 50%; */
         min-width: 250px;
         max-width: 700px;
         margin: 0 auto;

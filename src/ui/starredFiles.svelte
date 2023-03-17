@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { App, Menu, Notice, TFile } from "obsidian";
-	import type { HomeTabView } from "src/homeView";
+	import { App, Menu, Notice, TFile, View } from "obsidian";
 	import type { HomeTabSettings } from "src/settings";
 	import { IconSelectionModal } from "src/iconSelectionModal";
 	import FileDisplayItem from "./svelteComponents/fileDisplayItem.svelte";
 	import type { customStarredFile, starredFileManager } from "src/starredFiles";
 
+    export let view: View
     export let starredFileList: customStarredFile[]
-    export let view: HomeTabView
     export let pluginSettings: HomeTabSettings
     export let starredFileManager: starredFileManager
 
