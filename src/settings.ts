@@ -6,9 +6,8 @@ import ImageFileSuggester from './suggester/imageSuggester'
 import cssUnitValidator from './utils/cssUnitValidator'
 import isLink from './utils/isLink'
 import fontSuggester from './suggester/fontSuggester'
-import { RecentFileManager, type recentFileStored } from './recentFiles'
-import { starredFileManager, type starredFileStore } from './starredFiles'
-import { starredFiles } from './store'
+import type { recentFileStored } from './recentFiles'
+import type { starredFileStore } from './starredFiles'
 
 type ColorChoices = 'default' | 'accentColor' | 'custom'
 type LogoChoiches = 'default' | 'imagePath' | 'imageLink' | 'lucideIcon' | 'none'
@@ -155,10 +154,10 @@ export class HomeTabSettingTab extends PluginSettingTab{
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.showStarredFiles)
                 .onChange((value) => {this.plugin.settings.showStarredFiles = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()
-                    if(value && !this.plugin.starredFileManager){
-                        this.plugin.starredFileManager = new starredFileManager(this.app, this.plugin, starredFiles)
-                    }
-                    value ? this.plugin.starredFileManager.load() : this.plugin.starredFileManager.unload() // Detach starredFileManager instance
+                    // if(value && !this.plugin.starredFileManager){
+                    //     this.plugin.starredFileManager = new starredFileManager(this.app, this.plugin, starredFiles)
+                    // }
+                    // value ? this.plugin.starredFileManager.load() : this.plugin.starredFileManager.unload() // Detach starredFileManager instance
                 }))
         }
 
@@ -168,10 +167,10 @@ export class HomeTabSettingTab extends PluginSettingTab{
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.showRecentFiles)
                 .onChange((value) => {this.plugin.settings.showRecentFiles = value; this.plugin.saveSettings(); this.display(); this.plugin.refreshOpenViews()
-                    if(value && !this.plugin.recentFileManager){
-                        this.plugin.recentFileManager = new RecentFileManager(this.app, this.plugin)
-                    }
-                    value ? this.plugin.recentFileManager.load() : this.plugin.recentFileManager.unload() // Detach recentFileManager instance
+                    // if(value && !this.plugin.recentFileManager){
+                    //     this.plugin.recentFileManager = new RecentFileManager(this.app, this.plugin)
+                    // }
+                    // value ? this.plugin.recentFileManager.load() : this.plugin.recentFileManager.unload() // Detach recentFileManager instance
                 }))
 
         if(this.plugin.settings.showRecentFiles){

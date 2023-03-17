@@ -79,7 +79,7 @@ export class EmbeddedHomeTab extends MarkdownRenderChild{
             switch (true) {
                 case line === '':
                     break
-                case line === 'only searchbar':
+                case line === 'only search bar':
                     this.searchbarOnly = true
                     break
                 case line === 'show recent files':
@@ -127,7 +127,6 @@ export class HomeTabView extends FileView{
                 HomeTabSearchBar: this.searchBar
             }
         });
-
         this.searchBar.load()
         this.searchBar.focusSearchbar()
 

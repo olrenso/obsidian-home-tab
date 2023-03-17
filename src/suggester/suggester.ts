@@ -121,8 +121,6 @@ export abstract class TextInputSuggester<T> implements ISuggester{
     private closingAnimationTimeout: NodeJS.Timeout
     private closingAnimationRunning: boolean
 
-    protected debouncedOnInput(): void{}
-
     constructor(app: App, inputEl: HTMLInputElement, suggestionParentContainer: HTMLElement, viewOptions?: suggesterViewOptions, searchDelay?: number){
         this.app = app
         this.inputEl = inputEl
@@ -130,10 +128,8 @@ export abstract class TextInputSuggester<T> implements ISuggester{
         
         this.suggester = new Suggester(this, this.scope)
         
-        this.debouncedOnInput = debounce(() => this.onInput(), searchDelay ?? 0 , false)
-        
-        this.inputEl.addEventListener('input', this.debouncedOnInput.bind(this))
-        this.inputEl.addEventListener('focus', this.debouncedOnInput.bind(this))
+        this.inputEl.addEventListener('input', searchDelay ? debounce(() => this.onInput(), searchDelay , false) : this.onInput.bind(this))
+        this.inputEl.addEventListener('focus', searchDelay ? debounce(() => this.onInput(), searchDelay , false) : this.onInput.bind(this))
         this.inputEl.addEventListener('blur', this.close.bind(this))
         
         this.scope.register([], 'escape', this.close.bind(this))

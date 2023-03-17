@@ -16,9 +16,9 @@
     export let embeddedView: EmbeddedHomeTab | undefined = undefined
 
     // let viewType: 'embed' | 'standalone' = view instanceof HomeTabView ? 'standalone' : 'embed'
-    let starredFileList: customStarredFile[]
+    let starredFileList: customStarredFile[] = []
     let pluginSettings: HomeTabSettings
-    let recentFileList: recentFile[]
+    let recentFileList: recentFile[] = []
     
     pluginSettingsStore.subscribe((settings) => {
         pluginSettings = settings
@@ -99,11 +99,11 @@
     
     <SearchBar {HomeTabSearchBar} embedded={embeddedView ? true : false}/>
 
-    {#if isStarredPluginEnabled && starredFileList && renderRecentFiles}
+    {#if isStarredPluginEnabled && starredFileList && renderStarredFiles}
         <StarredFiles {starredFileList} {view} {pluginSettings} starredFileManager={plugin.starredFileManager}/>
     {/if}
 
-    {#if plugin.recentFileManager && recentFileList.length > 0  && renderStarredFiles}
+    {#if plugin.recentFileManager && recentFileList.length > 0  && renderRecentFiles}
         <RecentFiles {recentFileList} {view} {pluginSettings} recentFileManager={plugin.recentFileManager}/>
     {/if}
 </main>
