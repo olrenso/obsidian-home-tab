@@ -6,5 +6,5 @@
 	"description": "A browser-like search tab for your local files.",
 	"author": "Renso",
 	"authorUrl": "https://github.com/olrenso",
-	"isDesktopOnly": true
+	"isDesktopOnly": false
 }

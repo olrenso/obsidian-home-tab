@@ -343,7 +343,8 @@ export class HomeTabSettingTab extends PluginSettingTab{
             titleFontSettings.addSearch((text) => {
                 text.setValue(this.plugin.settings.font ? this.plugin.settings.font.replace(/"/g, ''): '')
                 text.setPlaceholder('Type anything ... ')
-                const suggester = new fontSuggester(this.app, text.inputEl, {
+                const isMobile = this.app.isMobile
+                const suggester: fontSuggester | undefined = isMobile ? undefined : new fontSuggester(this.app, text.inputEl, {
                     isScrollable: true,
                     style: `max-height: 200px;
                     width: fit-content;
@@ -352,7 +353,7 @@ export class HomeTabSettingTab extends PluginSettingTab{
 
                 text.onChange(async (value) => {
                     value = value.indexOf(' ') >= 0 ? `"${value}"` : value //Restore "" if font name contains whitespaces
-                    if((await suggester.getInstalledFonts()).includes(value)){
+                    if(isMobile || suggester && (await suggester.getInstalledFonts()).includes(value)){
                         this.plugin.settings.font = value
                         this.plugin.saveSettings()
                     }

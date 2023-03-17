@@ -9,6 +9,7 @@ declare module 'obsidian'{
 	interface App{
 		internalPlugins: InternalPlugins
 		dom: any
+		isMobile: boolean
 	}
 	interface InternalPlugins{
 		getPluginById: Function
