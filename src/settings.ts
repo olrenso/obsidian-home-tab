@@ -49,6 +49,7 @@ export interface HomeTabSettings extends ObjectKeys{
     unresolvedLinks: boolean
     recentFilesStore: recentFileStored[]
     starredFileStore: starredFileStore[]
+    searchDelay: number
 }
 
 export const DEFAULT_SETTINGS: HomeTabSettings = {
@@ -76,6 +77,7 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     unresolvedLinks: false,
     recentFilesStore: [],
     starredFileStore: [],
+    searchDelay: 0,
 }
 
 export class HomeTabSettingTab extends PluginSettingTab{
@@ -128,11 +130,21 @@ export class HomeTabSettingTab extends PluginSettingTab{
             .setName('Search results')
             .setDesc('Set how many results display.')
             .addSlider((slider) => slider
-                .setValue(this.plugin.settings.maxResults)
                 .setLimits(1, 25, 1)
+                .setValue(this.plugin.settings.maxResults)
                 .setDynamicTooltip()
                 .onChange((value) => {this.plugin.settings.maxResults = value; this.plugin.saveSettings()}))
             .then((settingEl) => this.addResetButton(settingEl, 'maxResults'))
+
+        new Setting(containerEl)
+            .setName('Search delay')
+            .setDesc('The value is in milliseconds.')
+            .addSlider((slider) => slider
+                .setLimits(0, 500, 10)
+                .setValue(this.plugin.settings.searchDelay)
+                .setDynamicTooltip()
+                .onChange((value) => {this.plugin.settings.searchDelay = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
+            .then((settingEl) => this.addResetButton(settingEl, 'searchDelay'))
 
 		containerEl.createEl('h2', {text: 'Files display'});
         

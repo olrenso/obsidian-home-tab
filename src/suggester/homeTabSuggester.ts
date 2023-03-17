@@ -40,7 +40,7 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
                     {hotkey: 'ctrl ↵', action: 'to open in new tab'},
                     {hotkey: 'esc', action: 'to dismiss'},], 
                     'home-tab-hotkey-suggestions') : undefined
-                })
+                }, plugin.settings.searchDelay)
         this.plugin = plugin
         this.view = view
         this.searchBar = searchBar

@@ -1,6 +1,6 @@
 // Inspired from @liamcain periodic notes suggest: https://github.com/liamcain/obsidian-periodic-notes/blob/main/src/ui/suggest.ts
 
-import { Scope, type App } from 'obsidian'
+import { debounce, Scope, type App } from 'obsidian'
 import suggesterView from '../ui/suggesterView.svelte'
 import { createPopper, type Instance as PopperInstance } from '@popperjs/core';
 import { get, writable, type Writable } from 'svelte/store';
@@ -121,26 +121,29 @@ export abstract class TextInputSuggester<T> implements ISuggester{
     private closingAnimationTimeout: NodeJS.Timeout
     private closingAnimationRunning: boolean
 
+    protected debouncedOnInput(): void{}
 
-    constructor(app: App, inputEl: HTMLInputElement, suggestionParentContainer: HTMLElement, viewOptions?: suggesterViewOptions){
+    constructor(app: App, inputEl: HTMLInputElement, suggestionParentContainer: HTMLElement, viewOptions?: suggesterViewOptions, searchDelay?: number){
         this.app = app
         this.inputEl = inputEl
         this.scope = new Scope(this.app.scope)
         
         this.suggester = new Suggester(this, this.scope)
-
-        this.inputEl.addEventListener('input', this.onInput.bind(this))
-        this.inputEl.addEventListener('focus', this.onInput.bind(this))
+        
+        this.debouncedOnInput = debounce(() => this.onInput(), searchDelay ?? 0 , false)
+        
+        this.inputEl.addEventListener('input', this.debouncedOnInput.bind(this))
+        this.inputEl.addEventListener('focus', this.debouncedOnInput.bind(this))
         this.inputEl.addEventListener('blur', this.close.bind(this))
-                
+        
         this.scope.register([], 'escape', this.close.bind(this))
-
+        
         this.viewOptions = viewOptions ?? {}
         this.suggestionParentContainer = suggestionParentContainer
         this.closingAnimationRunning = false
     }
 
-    onInput(){
+    onInput(): void{
         const input = this.inputEl.value
         const suggestions = this.getSuggestions(input)
         if(suggestions.length > 0){
@@ -152,7 +155,7 @@ export abstract class TextInputSuggester<T> implements ISuggester{
         }
     }
 
-    onNoSuggestion(){
+    onNoSuggestion(): void{
         this.close()
     }
 
@@ -199,8 +202,7 @@ export abstract class TextInputSuggester<T> implements ISuggester{
         this.additionalCleaning()
         this.onClose()
     }
-
-    abortClosingAnimation(){
+    abortClosingAnimation(): void{
         clearTimeout(this.closingAnimationTimeout)
         this.suggesterView?.$destroy()
         this.suggesterView = undefined
