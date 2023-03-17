@@ -65,7 +65,7 @@ export default class HomeTab extends Plugin {
 		this.registerView(VIEW_TYPE, (leaf) => new HomeTabView(leaf, this));		
 
 		// Replace new tabs with home tab view
-		this.registerEvent(this.app.workspace.on('layout-change', () => this.activateView()))
+		this.registerEvent(this.app.workspace.on('layout-change', () => this.onLayoutChange()))
 		// Refocus search bar on leaf change
 		this.registerEvent(this.app.workspace.on('active-leaf-change', (leaf: WorkspaceLeaf) => {if(leaf.view instanceof HomeTabView){leaf.view.searchBar.focusSearchbar()}}))
 
@@ -75,6 +75,15 @@ export default class HomeTab extends Plugin {
 
 		this.recentFileManager = new RecentFileManager(app, this)
 		this.recentFileManager.load()
+
+		this.addCommand({
+			id: 'open-new-home-tab',
+			name: 'Open new Home tab',
+			callback: () => this.activateView(false, true)})
+		this.addCommand({
+			id: 'open-home-tab',
+			name: 'Replace current tab',
+			callback: () => this.activateView(true)})
 
 		// Wait for all plugins to load before check if the starred plugin is enabled
 		this.app.workspace.onLayoutReady(() => {
@@ -91,36 +100,54 @@ export default class HomeTab extends Plugin {
 					ctx.addChild(embeddedHomeTab)
 				}
 			})
-		})
 
+			if(this.settings.newTabOnStart){
+				const leaves = app.workspace.getLeavesOfType(VIEW_TYPE)
+				if(leaves.length > 0){
+					app.workspace.setActiveLeaf(leaves[0])
+				}
+				else{
+					this.activateView(false, true)
+				}
+			}
+		})
 	}
 
-	onunload() {
+	onunload(): void {
 		this.app.workspace.detachLeavesOfType(VIEW_TYPE)
 		this.activeEmbeddedHomeTabViews.forEach(view => view.unload())
 		this.recentFileManager.unload()
 		this.starredFileManager.unload()
 	}
 
-	async loadSettings() {
+	async loadSettings(): Promise<void> {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
 	}
 
-	async saveSettings() {
+	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings)
 		pluginSettingsStore.update(() => this.settings)
 	}
 
-	activateView() {
-		const leaf = app.workspace.getMostRecentLeaf()
-		if(leaf && leaf.getViewState().type === 'empty'){
-			leaf.setViewState({
-				type: VIEW_TYPE,
-			})
+	private onLayoutChange(): void{
+		if(this.settings.replaceNewTabs){
+			this.activateView()
 		}
 	}
 
-	refreshOpenViews(){
+	public activateView(overrideView?: boolean, openNewTab?: boolean):void {
+		const leaf = openNewTab ? app.workspace.getLeaf('tab') : app.workspace.getMostRecentLeaf()
+		// const leaf = newTab ? app.workspace.getLeaf() : app.workspace.getMostRecentLeaf()
+		if(leaf && (overrideView || leaf.getViewState().type === 'empty')){
+			leaf.setViewState({
+				type: VIEW_TYPE,
+			})
+			// Focus newly opened tab
+			if(openNewTab){app.workspace.setActiveLeaf(leaf)}
+		}
+	}
+
+	public refreshOpenViews(): void {
 		this.app.workspace.getLeavesOfType(VIEW_TYPE).forEach((leaf) => leaf.rebuildView())
 	}
 }

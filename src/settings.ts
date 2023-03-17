@@ -49,6 +49,8 @@ export interface HomeTabSettings extends ObjectKeys{
     recentFilesStore: recentFileStored[]
     starredFileStore: starredFileStore[]
     searchDelay: number
+    replaceNewTabs: boolean
+    newTabOnStart: boolean
 }
 
 export const DEFAULT_SETTINGS: HomeTabSettings = {
@@ -77,6 +79,8 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     recentFilesStore: [],
     starredFileStore: [],
     searchDelay: 0,
+    replaceNewTabs: true,
+    newTabOnStart: false,
 }
 
 export class HomeTabSettingTab extends PluginSettingTab{
@@ -92,6 +96,20 @@ export class HomeTabSettingTab extends PluginSettingTab{
         containerEl.empty()
 
 		containerEl.createEl('h3', {text: 'Home tab settings'});
+
+        containerEl.createEl('h2', {text: 'General settings'});
+        new Setting(containerEl)
+        .setName('Replace new tabs with Home tab')
+        .addToggle(toggle => toggle
+            .setValue(this.plugin.settings.replaceNewTabs)
+            .onChange(value => {this.plugin.settings.replaceNewTabs = value; this.plugin.saveSettings()}))
+
+        new Setting(containerEl)
+        .setName('Open new Home tab on Obsidian start')
+        .setDesc('If a Home tab is already open it\'ll focus it instead of opening a new one.')
+        .addToggle(toggle => toggle
+            .setValue(this.plugin.settings.newTabOnStart)
+            .onChange(value => {this.plugin.settings.newTabOnStart = value; this.plugin.saveSettings()}))
 
 		containerEl.createEl('h2', {text: 'Search settings'});
         new Setting(containerEl)
