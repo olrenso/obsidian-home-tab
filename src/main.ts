@@ -102,12 +102,30 @@ export default class HomeTab extends Plugin {
 			})
 
 			if(this.settings.newTabOnStart){
+				// If an Home tab leaf is already open focus it
 				const leaves = app.workspace.getLeavesOfType(VIEW_TYPE)
 				if(leaves.length > 0){
-					app.workspace.setActiveLeaf(leaves[0])
+					app.workspace.revealLeaf(leaves[0])
+					// If more than one home tab leaf is open close them
+					leaves.forEach((leaf, index) => {
+						if(index < 1) return
+						leaf.detach()
+					})
 				}
 				else{
 					this.activateView(false, true)
+				}
+				// Close all other open leaves
+				if(this.settings.closePreviousSessionTabs){
+					// Get open leaves type
+					const leafTypes: string[] = []
+					app.workspace.iterateRootLeaves((leaf) => {
+						const leafType = leaf.view.getViewType()
+						if(leafTypes.indexOf(leafType) === -1 && leafType != VIEW_TYPE){
+							leafTypes.push(leafType)
+						}
+					})
+					leafTypes.forEach((type) => app.workspace.detachLeavesOfType(type))
 				}
 			}
 		})
@@ -143,7 +161,7 @@ export default class HomeTab extends Plugin {
 				type: VIEW_TYPE,
 			})
 			// Focus newly opened tab
-			if(openNewTab){app.workspace.setActiveLeaf(leaf)}
+			if(openNewTab){app.workspace.revealLeaf(leaf)}
 		}
 	}
 

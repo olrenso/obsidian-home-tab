@@ -51,6 +51,7 @@ export interface HomeTabSettings extends ObjectKeys{
     searchDelay: number
     replaceNewTabs: boolean
     newTabOnStart: boolean
+    closePreviousSessionTabs: boolean
 }
 
 export const DEFAULT_SETTINGS: HomeTabSettings = {
@@ -81,6 +82,7 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     searchDelay: 0,
     replaceNewTabs: true,
     newTabOnStart: false,
+    closePreviousSessionTabs: false,
 }
 
 export class HomeTabSettingTab extends PluginSettingTab{
@@ -109,7 +111,16 @@ export class HomeTabSettingTab extends PluginSettingTab{
         .setDesc('If a Home tab is already open it\'ll focus it instead of opening a new one.')
         .addToggle(toggle => toggle
             .setValue(this.plugin.settings.newTabOnStart)
-            .onChange(value => {this.plugin.settings.newTabOnStart = value; this.plugin.saveSettings()}))
+            .onChange(value => {this.plugin.settings.newTabOnStart = value; this.plugin.saveSettings(); this.display()}))
+
+        if(this.plugin.settings.newTabOnStart){
+            new Setting(containerEl)
+                .setName('Close previous session tabs on start')
+                .setDesc('This will closes all the tabs and leave only one Home tab when opening Obsidian.')
+                .addToggle(toggle => toggle
+                    .setValue(this.plugin.settings.closePreviousSessionTabs)
+                    .onChange(value => {this.plugin.settings.closePreviousSessionTabs = value; this.plugin.saveSettings()}))
+        }
 
 		containerEl.createEl('h2', {text: 'Search settings'});
         new Setting(containerEl)
