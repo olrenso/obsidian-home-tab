@@ -7,10 +7,8 @@ You can search any local file in your vault, both markdown notes and attachments
 
 This plugin is not meant to be a replacement for the default Quick switcher or any alternative one like [Another quick switcher](https://github.com/tadashi-aikawa/obsidian-another-quick-switcher) (from which I took inspiration), but rather a faster way to open a note or a file after opening a new tab.
 
-
-<!-- TODO -->
 ## How to use
-By default every new blank tab open is automatically replaced with the Home tab view. You can disable this behaviour and manually open a new Home tab through the command palette with the command `Home tab: Open new Home tab` or `Home tab: Replace current tab`.
+By default, every new empty tab is automatically replaced with the Home tab view. You can disable this behavior in the settings and manually open a new Home tab through the command palette with the commands `Home tab: Open new Home tab` or `Home tab: Replace current tab`.
 
 ## Features
 ### Filter search by file type or extension
@@ -41,7 +39,7 @@ To embed the search bar to a note, you have to create a `search-bar` code block 
 To show only the search bar, without the title and the logo/icon, add (in a new line) `only search bar`.
 To show the starred and recent files add, respectively, `show starred files` and `show recent files`.
 
-The following code block will render the search bar and the starred files.
+For example, the following code block will render the search bar and the starred files.
 ````text
 ```search-bar
 only search bar
