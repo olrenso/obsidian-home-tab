@@ -7,6 +7,11 @@ You can search any local file in your vault, both markdown notes and attachments
 
 This plugin is not meant to be a replacement for the default Quick switcher or any alternative one like [Another quick switcher](https://github.com/tadashi-aikawa/obsidian-another-quick-switcher) (from which I took inspiration), but rather a faster way to open a note or a file after opening a new tab.
 
+
+<!-- TODO -->
+## How to use
+By default every new blank tab open is automatically replaced with the Home tab view. You can disable this behaviour and manually open a new Home tab through the command palette with the command `Home tab: Open new Home tab` or `Home tab: Replace current tab`.
+
 ## Features
 ### Filter search by file type or extension
 To easily find a file you can filter the search by using filters for the file type or the file extension.
@@ -28,12 +33,31 @@ The following filters are available:
 
 ![](images/filters_gif.gif)
 
+### Embedded search bar
+You can embed the Home tab view in any note with options to show recent files, starred files, or only the search bar.
+
+To embed the search bar to a note, you have to create a `search-bar` code block (see the following example).
+
+To show only the search bar, without the title and the logo/icon, add (in a new line) `only search bar`.
+To show the starred and recent files add, respectively, `show starred files` and `show recent files`.
+
+The following code block will render the search bar and the starred files.
+````text
+```search-bar
+only search bar
+show starred files
+```
+````
+
+![](images/embedded_searchbar.png)
+
+
 ### Starred files
 If enabled, starred files are automatically displayed under the search bar.
 
-You can unstar a file directly from the home tab view by hovering the top right corner.
+By hovering the top right corner, you can unstar a file or change the displayed icon.
 
-![](images/unstar_file.png)
+![](images/starred_files-options.png)
 
 ## Settings
 
