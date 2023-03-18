@@ -4,6 +4,7 @@ import type { App, } from 'obsidian'
 import { ArrayFuzzySearch } from "./fuzzySearch"
 import { lucideIcons, type LucideIcon } from "../utils/lucideIcons"
 import { addLucideIcon } from "src/utils/htmlUtils"
+import IconSuggestion from "src/ui/svelteComponents/iconSuggestion.svelte"
 
 
 export default class iconSuggester extends PopoverTextInputSuggester<Fuse.FuseResult<string>>{
@@ -28,20 +29,10 @@ export default class iconSuggester extends PopoverTextInputSuggester<Fuse.FuseRe
         this.close()
     }
 
-    generateDisplayElementContent(suggestion: Fuse.FuseResult<string>): HTMLElement[] {
-        // return [createEl('span', {text: suggestion.item})]
-        const suggestionContentEl = createDiv('suggestion-content')
-        const suggestionTitleEl = suggestionContentEl.createDiv('suggestion-title')
-        suggestionTitleEl.appendText(suggestion.item)
-
-        const suggestionAuxEl = createDiv('suggestion-aux')
-        if(this.displayIcon){
-            const iconContainerEl = suggestionAuxEl.createSpan()
-            iconContainerEl.addClass('suggestion-flair')
-            addLucideIcon(iconContainerEl, suggestion.item as LucideIcon, {
-                size: 20,
-            })
-        }
-        return [suggestionContentEl, suggestionAuxEl]
+    getDisplayElementComponentType(): typeof IconSuggestion{
+        return IconSuggestion
+    }
+    getDisplayElementProps(): {}{
+        return {}
     }
 }

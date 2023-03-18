@@ -3,6 +3,7 @@ import type Fuse from 'fuse.js'
 import type { App, } from 'obsidian'
 import { ArrayFuzzySearch } from "./fuzzySearch"
 import { getFonts } from 'font-list'
+import FontSuggestion from "src/ui/svelteComponents/fontSuggestion.svelte";
 
 export default class fontSuggester extends PopoverTextInputSuggester<Fuse.FuseResult<string>>{
     private fontList: string[]
@@ -33,16 +34,15 @@ export default class fontSuggester extends PopoverTextInputSuggester<Fuse.FuseRe
         this.close()
     }
 
-    generateDisplayElementContent(suggestion: Fuse.FuseResult<string>): HTMLElement[] {
-        const suggestionContentEl = createDiv('suggestion-content')
-        const suggestionTitleEl = suggestionContentEl.createDiv('suggestion-title')
-        suggestionTitleEl.appendText(suggestion.item.replace(/"/g, ``))
+    getDisplayElementComponentType(): typeof FontSuggestion{
+        return FontSuggestion
+    }
 
-        if(this.renderFont){suggestionTitleEl.style.fontFamily = suggestion.item}
-
-        const suggestionAuxEl = createDiv('suggestion-aux')
-
-        return [suggestionContentEl, suggestionAuxEl]
+    getDisplayElementProps(suggestion: Fuse.FuseResult<string>): {renderFont: boolean, suggestionTitle: string}{
+        return {
+            renderFont: this.renderFont ?? false,
+            suggestionTitle: suggestion.item.replace(/"/g, ``),
+        }
     }
 
     onNoSuggestion(): void {

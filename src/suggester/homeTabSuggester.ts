@@ -5,10 +5,10 @@ import type HomeTab from '../main'
 import type { HomeTabSearchBar } from 'src/homeView'
 import { generateSearchFile,  getParentFolderFromPath,  getSearchFiles, getUnresolvedMarkdownFiles } from 'src/utils/getFilesUtils'
 import { TextInputSuggester } from './suggester'
-import { addLucideIcon } from 'src/utils/htmlUtils'
 import { generateHotkeySuggestion } from 'src/utils/htmlUtils'
 import { isValidExtension, isValidFileType, type FileExtension, type FileType } from 'src/utils/getFileTypeUtils'
 import { get } from 'svelte/store'
+import HomeTabFileSuggestion from 'src/ui/svelteComponents/homeTabFileSuggestion.svelte'
 
 declare module 'obsidian'{
     interface MetadataCache{
@@ -31,8 +31,6 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
         super(app, get(searchBar.searchBarEl), get(searchBar.suggestionContainerEl), {
                 // @ts-ignore
                 containerClass: `home-tab-suggestion-container ${Platform.isPhone ? 'is-phone' : ''}`,
-                // suggestionClass: 'home-tab-suggestion', 
-                suggestionItemClass: 'suggestion-item mod-complex',
                 additionalClasses: `${plugin.settings.selectionHighlight === 'accentColor' ? 'use-accent-color' : ''}`,
                 additionalModalInfo: plugin.settings.showShortcuts ? generateHotkeySuggestion([
                     {hotkey: '↑↓', action: 'to navigate'},
@@ -202,53 +200,21 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
         }
     }
 
-    generateDisplayElementContent(suggestion: Fuse.FuseResult<SearchFile>): HTMLElement[] {
-        const contentEl = createDiv('suggestion-content')
-        const suggestionTitleEl = contentEl.createDiv('suggestion-title home-tab-suggestion-title')
-        const suggestionAuxEl = createDiv('suggestion-aux')
-
-        // Suggestion name
+    getDisplayElementProps(suggestion: Fuse.FuseResult<SearchFile>): {nameToDisplay: string, filePath?: string}{
         const nameToDisplay = this.fuzzySearch.getBestMatch(suggestion, this.inputEl.value)
-        const fileNameEl = suggestionTitleEl.createEl('span', { text: nameToDisplay })
-        if(suggestion.item.fileType != 'markdown'){
-            suggestionTitleEl.createEl('div', { text: suggestion.item.extension, cls: 'nav-file-tag home-tab-suggestion-file-tag'})
+        let filePath: string | undefined = undefined
+        if(this.plugin.settings.showPath){
+            filePath = suggestion.item.file ? suggestion.item.file.parent.name : getParentFolderFromPath(suggestion.item.path) // Parent folder
         }
         
-        // File details
-        if (suggestion.item.isCreated) {
-            // If the suggestion name is an alias display the actual filename under it
-            if (suggestion.item.aliases && suggestion.item.aliases?.includes(nameToDisplay)) {
-                const noteEl = contentEl.createDiv('home-tab-suggestion-description')
-                addLucideIcon(noteEl, 'forward', {size: 15, ariaLabel: 'Alias of'})
-                noteEl.createEl('span', { text:  suggestion.item.basename})
-            }
+        return {
+            nameToDisplay: nameToDisplay,
+            filePath: filePath
         }
-        else {
-            // Show if a file is not created
-            const iconContainerEl = suggestionAuxEl.createDiv('home-tab-suggestion-tip')
-            if(suggestion.item.isUnresolved){
-                suggestionTitleEl.addClass('is-unresolved')
-                addLucideIcon(iconContainerEl, 'file-plus', {size: 15, ariaLabel: 'Not created yet, select to create'})
-            }
-            else{
-                suggestionAuxEl.createDiv('suggestion-hotkey').createEl('span', {text: 'Enter to create'})
-                addLucideIcon(iconContainerEl, 'file-question', {size: 15, ariaLabel: 'Not exists yet, select to create'})
-            }
-        }
+    }
 
-        // Display file path
-        if(suggestion.item.isCreated || suggestion.item.isUnresolved){
-            if (this.plugin.settings.showPath) {
-                const pathEl = suggestionAuxEl.createEl('div', { cls: 'home-tab-suggestion-filepath', attr: {'aria-label' : 'File path'}})
-                // const pathText = suggestion.item.path.replace(suggestion.item.name, '') // Full path
-                const pathText = suggestion.item.file ? suggestion.item.file.parent.name : getParentFolderFromPath(suggestion.item.path) // Parent folder
-                const iconContainer = pathEl.createDiv('')
-                addLucideIcon(iconContainer, 'folder', {size: 15})
-                pathEl.createEl('span', { text: pathText , cls: 'home-tab-file-path'})
-            }
-        }
-
-        return [contentEl, suggestionAuxEl]
+    getDisplayElementComponentType(): typeof HomeTabFileSuggestion{
+        return HomeTabFileSuggestion
     }
 
     async handleFileCreation(selectedFile?: SearchFile, newTab?: boolean): Promise<void>{

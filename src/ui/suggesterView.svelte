@@ -1,6 +1,4 @@
 <script lang="ts">
-    import type Fuse from 'fuse.js'
-    import type { TFile } from 'obsidian'
     import { quintOut } from 'svelte/easing'
     import { slide } from 'svelte/transition'
 	import type { Suggester, TextInputSuggester, suggesterViewOptions } from '../suggester/suggester';
@@ -9,10 +7,12 @@
     export let options: suggesterViewOptions
     export let textInputSuggester: TextInputSuggester<any>
 
-    let suggestions: Fuse.FuseResult<TFile>[]
+    let suggestions: any[]
     suggester.suggestionsStore.subscribe((value) => suggestions = value)
+    
     let selectedItemIndex: number
     suggester.selectedItemIndexStore.subscribe((value) => selectedItemIndex = value)
+    
     const suggestionWrapper = suggester.suggestionsContainer
 </script>
 
@@ -22,16 +22,10 @@
         transition:slide={{duration:200, easing: quintOut}}>
         <div class="{options.suggestionClass ?? 'suggestion'} {options.additionalClasses ?? ''}" class:scrollable="{options.isScrollable}"
             style="{options.style ?? ''}" bind:this={$suggestionWrapper}>
-            {#each suggestions as suggestion, index}
-                <div class="{options.suggestionItemClass ?? 'suggestion-item mod-complex'}" class:is-selected="{selectedItemIndex === index}" 
-                    on:mousemove="{() => suggester.setSelectedItemIndex(index)}"
-                    on:click="{() => textInputSuggester.useSelectedItem(suggester.getSelectedItem())}"
-                    on:auxclick="{(e) => {if(e.button === 1){textInputSuggester.useSelectedItem(suggester.getSelectedItem(), true)}}}">
-                    <!-- transition:slide={{duration: 200, easing: quintOut}}> -->
-                    {#each textInputSuggester.generateDisplayElementContent(suggestion) as element}
-                        {@html element.outerHTML}
-                    {/each}
-                </div>
+            {#each suggestions as suggestion, index (suggestion)}
+                <svelte:component this={textInputSuggester.getDisplayElementComponentType()}
+                    {index} {suggestion} {suggester} {textInputSuggester} {selectedItemIndex}
+                    {... textInputSuggester.getDisplayElementProps(suggestion)}/>
             {/each}
         </div>
         {#if options.additionalModalInfo}

@@ -4,12 +4,12 @@ import { debounce, Platform, Scope, type App } from 'obsidian'
 import suggesterView from '../ui/suggesterView.svelte'
 import { createPopper, type Instance as PopperInstance } from '@popperjs/core';
 import { get, writable, type Writable } from 'svelte/store';
+import type { SvelteComponent } from 'svelte';
 
 /**
  * @param containerClass The class of the suggestion list container.
  * @param suggestionClass Class of the suggestion list, if not given will be used the obsidian default 'suggestion'
  * @param additionalClasses Additional suggestion list classes.
- * @param suggestionItemClass Class(es) of suggestion items, if not given will be used the obsidian default 'suggestion-item'
  * @param style The style of the suggestion list, usefull to implement variables.
  * @param additionalModalInfo HTMLelement to render under suggestion items.
  */
@@ -18,15 +18,16 @@ export interface suggesterViewOptions{
     containerClass?: string
     suggestionClass?: string
     additionalClasses?: string
-    suggestionItemClass?: string
     style?: string
     additionalModalInfo?: HTMLElement
+    // additionalComponent?: typeof SvelteComponent
+    // additionalComponentProps?: []
 }
 
 interface ISuggester{
     getSuggestions: Function
     useSelectedItem: Function
-    generateDisplayElementContent: Function
+    getDisplayElementProps: Function
     scrollSelectedItemIntoView: Function
     onNoSuggestion: Function
 }
@@ -118,8 +119,8 @@ export abstract class TextInputSuggester<T> implements ISuggester{
 
     protected displayedSuggestions: boolean
     
-    private closingAnimationTimeout: NodeJS.Timeout
-    private closingAnimationRunning: boolean
+    protected closingAnimationTimeout: NodeJS.Timeout
+    protected closingAnimationRunning: boolean
 
     constructor(app: App, inputEl: HTMLInputElement, suggestionParentContainer: HTMLElement, viewOptions?: suggesterViewOptions, searchDelay?: number){
         this.app = app
@@ -128,8 +129,8 @@ export abstract class TextInputSuggester<T> implements ISuggester{
         
         this.suggester = new Suggester(this, this.scope)
         
-        this.inputEl.addEventListener('input', searchDelay ? debounce(() => this.onInput(), searchDelay , false) : this.onInput.bind(this))
-        this.inputEl.addEventListener('focus', searchDelay ? debounce(() => this.onInput(), searchDelay , false) : this.onInput.bind(this))
+        this.inputEl.addEventListener('input', searchDelay ? debounce(async () => await this.onInput(), searchDelay , false) : this.onInput.bind(this))
+        this.inputEl.addEventListener('focus', searchDelay ? debounce(async () => await this.onInput(), searchDelay , false) : this.onInput.bind(this))
         this.inputEl.addEventListener('blur', this.close.bind(this))
         
         this.scope.register([], 'escape', this.close.bind(this))
@@ -139,9 +140,9 @@ export abstract class TextInputSuggester<T> implements ISuggester{
         this.closingAnimationRunning = false
     }
 
-    onInput(): void{
+    async onInput(): Promise<void>{
         const input = this.inputEl.value
-        const suggestions = this.getSuggestions(input)
+        const suggestions = await this.getSuggestions(input)
         if(suggestions.length > 0){
             this.suggester.setSuggestions(suggestions)
             this.open()
@@ -206,12 +207,13 @@ export abstract class TextInputSuggester<T> implements ISuggester{
     }
     
     scrollSelectedItemIntoView(): void{
-        get(this.suggester.suggestionsContainer).getElementsByClassName(this.viewOptions.suggestionItemClass ?? 'suggestion-item')[this.suggester.getSelectedItemIndex()]?.scrollIntoView({behavior: 'auto', block: 'nearest', inline: 'nearest'})
+        get(this.suggester.suggestionsContainer).children[this.suggester.getSelectedItemIndex()]?.scrollIntoView({behavior: 'auto', block: 'nearest', inline: 'nearest'})
     }
 
-    abstract getSuggestions(input: string): T[]
+    abstract getSuggestions(input: string): T[] | Promise<T[]>
     abstract useSelectedItem(item: T, middleClick?: boolean): void
-    abstract generateDisplayElementContent(suggestion: T): HTMLElement[]
+    abstract getDisplayElementProps(suggestion: T): {}
+    abstract getDisplayElementComponentType(): typeof SvelteComponent
 }
 
 export abstract class PopoverTextInputSuggester<T> extends TextInputSuggester<T>{
@@ -258,5 +260,6 @@ export abstract class PopoverTextInputSuggester<T> extends TextInputSuggester<T>
 
     abstract getSuggestions(input: string): T[]
     abstract useSelectedItem(item: T): void
-    abstract generateDisplayElementContent(suggestion: T): HTMLElement[]
+    abstract getDisplayElementProps(suggestion: T): {}
+    abstract getDisplayElementComponentType(): typeof SvelteComponent
 }
