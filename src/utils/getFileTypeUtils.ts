@@ -27,14 +27,13 @@ export function getFileTypeFromExtension(extension: string): FileType | undefine
 
 export function getExtensionFromFilename(filename: string): FileExtension | undefined{
     // const extension = filename.match(/(?<=\.)[^.]+$/g) on iOS lookbehind groups don't work
-    const extension = filename.match(/\.([^.]+$)./g)
+    const extension = filename.match(/\.([^.]+$)/g)
     if (extension){
         // Remove the dot selected by the regex and return the string as extension
         return extension[0].substring(1) as FileExtension
     }
     return undefined
 }
-
 export interface unresolvedFile {
     basename: string,
     path: string,

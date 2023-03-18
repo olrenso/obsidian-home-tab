@@ -154,6 +154,7 @@ export function getStarredFiles(): TFile[]{
 }
 
 export function getParentFolderFromPath(filepath: string): string{
-    const regexResult = filepath.match(/.*\/([^\/]+)\//)
+    // const regexResult = filepath.match(/.*\/([^\/]+)\//)
+    const regexResult = filepath.match(/([^\/]+)\/[^\/]+\/*$/)
     return regexResult ? regexResult[1] : '/' 
 }

@@ -52,6 +52,7 @@ export interface HomeTabSettings extends ObjectKeys{
     replaceNewTabs: boolean
     newTabOnStart: boolean
     closePreviousSessionTabs: boolean
+    omnisearch: boolean
 }
 
 export const DEFAULT_SETTINGS: HomeTabSettings = {
@@ -83,6 +84,7 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     replaceNewTabs: true,
     newTabOnStart: false,
     closePreviousSessionTabs: false,
+    omnisearch: false,
 }
 
 export class HomeTabSettingTab extends PluginSettingTab{
@@ -123,24 +125,34 @@ export class HomeTabSettingTab extends PluginSettingTab{
         }
 
 		containerEl.createEl('h2', {text: 'Search settings'});
-        new Setting(containerEl)
-            .setName('Search only markdown files')
-            .addToggle(toggle => toggle
-                .setValue(this.plugin.settings.markdownOnly)
-                .onChange(value => {this.plugin.settings.markdownOnly = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
+        if(this.plugin.app.plugins.getPlugin('omnisearch')){
+            new Setting(containerEl)
+                .setName('Use omnisearch')
+                .addToggle(toggle => toggle
+                    .setValue(this.plugin.settings.omnisearch)
+                    .onChange(value => {this.plugin.settings.omnisearch = value; this.plugin.saveSettings(); this.display(); this.plugin.refreshOpenViews()}))
+        }
 
-        new Setting(containerEl)
-            .setName('Show uncreated files')
-            .addToggle(toggle => toggle
-                .setValue(this.plugin.settings.unresolvedLinks)
-                .onChange(value => {this.plugin.settings.unresolvedLinks = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
-        
-        new Setting(containerEl)
-            .setName('Show file path')
-            .setDesc('Display file path at the right of the filename.')
-            .addToggle((toggle) => toggle
-                .setValue(this.plugin.settings.showPath)
-                .onChange((value) => {this.plugin.settings.showPath = value; this.plugin.saveSettings()}))
+        if(!this.plugin.settings.omnisearch){
+            new Setting(containerEl)
+                .setName('Search only markdown files')
+                .addToggle(toggle => toggle
+                    .setValue(this.plugin.settings.markdownOnly)
+                    .onChange(value => {this.plugin.settings.markdownOnly = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
+    
+            new Setting(containerEl)
+                .setName('Show uncreated files')
+                .addToggle(toggle => toggle
+                    .setValue(this.plugin.settings.unresolvedLinks)
+                    .onChange(value => {this.plugin.settings.unresolvedLinks = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
+            
+            new Setting(containerEl)
+                .setName('Show file path')
+                .setDesc('Display file path at the right of the filename.')
+                .addToggle((toggle) => toggle
+                    .setValue(this.plugin.settings.showPath)
+                    .onChange((value) => {this.plugin.settings.showPath = value; this.plugin.saveSettings()}))
+        }
 
         new Setting(containerEl)
             .setName('Show shorcuts')

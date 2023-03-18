@@ -3,13 +3,14 @@ import type HomeTab from "./main";
 import Homepage from './ui/homepage.svelte'
 import { writable, type Writable, get} from "svelte/store";
 import HomeTabFileSuggester from "src/suggester/homeTabSuggester";
+import OmnisearchSuggester from "./suggester/omnisearchSuggester";
 
 export const VIEW_TYPE = "home-tab-view";
 
 export class HomeTabSearchBar{
     protected view: View
     protected plugin: HomeTab
-    public fileSuggester: HomeTabFileSuggester
+    public fileSuggester: HomeTabFileSuggester | OmnisearchSuggester
     public activeExtEl: Writable<HTMLElement>
     public searchBarEl: Writable<HTMLInputElement>
     public suggestionContainerEl: Writable<HTMLElement>
@@ -30,7 +31,12 @@ export class HomeTabSearchBar{
     }
 
     public load(): void{
-        this.fileSuggester = new HomeTabFileSuggester(this.plugin.app, this.plugin, this.view, this)
+        if(this.plugin.settings.omnisearch && this.plugin.app.plugins.getPlugin('omnisearch')){
+            this.fileSuggester = new OmnisearchSuggester(this.plugin.app, this.plugin, this.view, this)
+        }
+        else{
+            this.fileSuggester = new HomeTabFileSuggester(this.plugin.app, this.plugin, this.view, this)
+        }
         this.onLoad ? this.onLoad() : null
     }
 }

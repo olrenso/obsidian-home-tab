@@ -8,6 +8,7 @@ import { starredFileManager } from './starredFiles';
 declare module 'obsidian'{
 	interface App{
 		internalPlugins: InternalPlugins
+		plugins: Plugins
 		dom: any
 		isMobile: boolean
 	}
@@ -16,6 +17,9 @@ declare module 'obsidian'{
 		plugins: {
 			starred: StarredPlugin
 		}
+	}
+	interface Plugins{
+		getPlugin: (id: string) => Plugin_2
 	}
 	interface StarredPlugin extends Plugin_2{
 		instance: {
