@@ -1,5 +1,5 @@
 import type Fuse from 'fuse.js'
-import { normalizePath, TAbstractFile, TFile, View, type App } from 'obsidian'
+import { normalizePath, Platform, TAbstractFile, TFile, View, type App } from 'obsidian'
 import { DEFAULT_FUSE_OPTIONS, FileFuzzySearch, type SearchFile } from './fuzzySearch'
 import type HomeTab from '../main'
 import type { HomeTabSearchBar } from 'src/homeView'
@@ -29,7 +29,8 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
 
     constructor(app: App, plugin: HomeTab, view: View, searchBar: HomeTabSearchBar) {
         super(app, get(searchBar.searchBarEl), get(searchBar.suggestionContainerEl), {
-                containerClass: 'home-tab-suggestion-container',
+                // @ts-ignore
+                containerClass: `home-tab-suggestion-container ${Platform.isPhone ? 'is-phone' : ''}`,
                 // suggestionClass: 'home-tab-suggestion', 
                 suggestionItemClass: 'suggestion-item mod-complex',
                 additionalClasses: `${plugin.settings.selectionHighlight === 'accentColor' ? 'use-accent-color' : ''}`,

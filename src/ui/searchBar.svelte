@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Platform } from "obsidian";
     import type { HomeTabSearchBar } from "../homeView";
 
     export let HomeTabSearchBar: HomeTabSearchBar
@@ -6,12 +7,14 @@
     const searchBarEl = HomeTabSearchBar.searchBarEl
     const activeExtEl = HomeTabSearchBar.activeExtEl
     const container = HomeTabSearchBar.suggestionContainerEl
+    // @ts-ignore
+    const isPhone = Platform.isPhone
 </script>
 
 <div class="home-tab-searchbar-container" bind:this={$container}>
     <div class="home-tab-searchbar"
         class:embedded={embedded}
-        style:width={embedded ? "85%" : "50%"}>
+        style:width={embedded || isPhone ? "90%" : "50%"}>
         <div class='nav-file-tag home-tab-suggestion-file-tag hide' bind:this={$activeExtEl}>PNG</div>
         <input type="search" spellcheck="false" placeholder="Type to start search..." bind:this={$searchBarEl}>
     </div>

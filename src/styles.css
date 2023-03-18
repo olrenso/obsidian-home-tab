@@ -29,9 +29,10 @@
     border-radius: 0 0 var(--input-radius) var(--input-radius);
 }
 
-.home-tab-searchbar.embedded+.home-tab-suggestion-container{
-    width: 85%;
+.home-tab-searchbar.embedded+.home-tab-suggestion-container, .home-tab-suggestion-container.is-phone{
+    width: 90%;
 }
+
 
 .home-tab-suggestion-container .suggestion{
     flex: 1;
