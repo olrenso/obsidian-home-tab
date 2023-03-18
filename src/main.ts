@@ -67,7 +67,7 @@ export default class HomeTab extends Plugin {
 		// Replace new tabs with home tab view
 		this.registerEvent(this.app.workspace.on('layout-change', () => this.onLayoutChange()))
 		// Refocus search bar on leaf change
-		this.registerEvent(this.app.workspace.on('active-leaf-change', (leaf: WorkspaceLeaf) => {if(leaf.view instanceof HomeTabView){leaf.view.searchBar.focusSearchbar()}}))
+		this.registerEvent(this.app.workspace.on('active-leaf-change', (leaf: WorkspaceLeaf) => {if(leaf.view instanceof HomeTabView){leaf.view.searchBar.focusSearchbar(); console.log('focus')}}))
 
 		pluginSettingsStore.set(this.settings) // Store the settings for the svelte components
 

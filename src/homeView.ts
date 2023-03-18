@@ -9,7 +9,7 @@ export const VIEW_TYPE = "home-tab-view";
 export class HomeTabSearchBar{
     protected view: View
     protected plugin: HomeTab
-    protected fileSuggester: HomeTabFileSuggester
+    public fileSuggester: HomeTabFileSuggester
     public activeExtEl: Writable<HTMLElement>
     public searchBarEl: Writable<HTMLInputElement>
     public suggestionContainerEl: Writable<HTMLElement>
@@ -69,6 +69,7 @@ export class EmbeddedHomeTab extends MarkdownRenderChild{
 
     onunload(): void {
         this.plugin.activeEmbeddedHomeTabViews.splice(this.plugin.activeEmbeddedHomeTabViews.findIndex(item => item.view == this.view),1)
+        this.searchBar.fileSuggester.close()
         this.homepage.$destroy()
     }
 
@@ -135,6 +136,7 @@ export class HomeTabView extends FileView{
     }
 
     async onClose(): Promise<void>{
+        this.searchBar.fileSuggester.close()
         this.homepage.$destroy();
     }
 } 

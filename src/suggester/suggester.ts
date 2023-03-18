@@ -1,6 +1,6 @@
 // Inspired from @liamcain periodic notes suggest: https://github.com/liamcain/obsidian-periodic-notes/blob/main/src/ui/suggest.ts
 
-import { debounce, Scope, type App } from 'obsidian'
+import { debounce, Platform, Scope, type App } from 'obsidian'
 import suggesterView from '../ui/suggesterView.svelte'
 import { createPopper, type Instance as PopperInstance } from '@popperjs/core';
 import { get, writable, type Writable } from 'svelte/store';
@@ -228,7 +228,8 @@ export abstract class PopoverTextInputSuggester<T> extends TextInputSuggester<T>
         // Render element on top of modals
         this.popperWrapper.style.zIndex = 'var(--layer-menu)' 
 
-        const isPhone = document.body.clientWidth < 600 ? true : false
+        // @ts-ignore
+        const isPhone = Platform.isPhone
         // On phones place popover on bottom of the screen
         const popperReference = isPhone ? document.body : this.inputEl
         if(isPhone){this.popperWrapper.style.width = '100%'}
