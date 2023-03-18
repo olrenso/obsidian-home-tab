@@ -81,7 +81,6 @@
         /* height: 100px; */
         min-width: 75px;
         max-width: 125px;
-		cursor: pointer;
 
         position: relative;
     }
