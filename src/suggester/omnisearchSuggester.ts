@@ -5,6 +5,7 @@ import { TextInputSuggester } from './suggester'
 import { generateHotkeySuggestion } from 'src/utils/htmlUtils'
 import { get } from 'svelte/store'
 import OmnisearchSuggestion from 'src/ui/svelteComponents/omnisearchSuggestion.svelte'
+import { concatenateStringsToRegex, escapeStringForRegExp } from 'src/utils/regexUtils'
 
 export type OmnisearchApi = {
     // Returns a promise that will contain the same results as the Vault modal
@@ -100,6 +101,9 @@ export default class OmnisearchSuggester extends TextInputSuggester<ResultNoteAp
     
     getDisplayElementProps(suggestion: ResultNoteApi): {excerpt: string}{
         let content = suggestion.excerpt
+        const escapedWords = suggestion.foundWords.map(word => escapeStringForRegExp(word))
+
+        content = content.replaceAll(concatenateStringsToRegex(escapedWords),(value) => `<span class="suggestion-highlight omnisearch-highlight omnisearch-default-highlight">${value}</span>`)
 
         return {excerpt: content}
     }
