@@ -1,4 +1,4 @@
-import { App, Setting, PluginSettingTab, normalizePath } from 'obsidian'
+import { App, Setting, PluginSettingTab, normalizePath, Platform } from 'obsidian'
 import type HomeTab from './main'
 import iconSuggester from './suggester/iconSuggester'
 import { lucideIcons, type LucideIcon } from './utils/lucideIcons'
@@ -8,6 +8,7 @@ import isLink from './utils/isLink'
 import fontSuggester from './suggester/fontSuggester'
 import type { recentFileStored } from './recentFiles'
 import type { starredFileStore } from './starredFiles'
+import { checkFont } from './utils/fontValidator'
 
 type ColorChoices = 'default' | 'accentColor' | 'custom'
 type LogoChoiches = 'default' | 'imagePath' | 'imageLink' | 'lucideIcon' | 'none'
@@ -379,11 +380,19 @@ export class HomeTabSettingTab extends PluginSettingTab{
         titleFontSettings.descEl.parentElement?.addClass('compressed')
 
         if(this.plugin.settings.customFont === 'custom'){
+            let invalidFontIcon: HTMLElement
+            titleFontSettings
+                .addExtraButton((button) => {button
+                    .setIcon('alert-circle')
+                    .setTooltip('The font is not valid.')
+                    invalidFontIcon = button.extraSettingsEl
+                    invalidFontIcon.toggleVisibility(false)
+                    invalidFontIcon.addClass('mod-warning')})
+
             titleFontSettings.addSearch((text) => {
                 text.setValue(this.plugin.settings.font ? this.plugin.settings.font.replace(/"/g, ''): '')
                 text.setPlaceholder('Type anything ... ')
-                const isMobile = this.app.isMobile
-                const suggester: fontSuggester | undefined = isMobile ? undefined : new fontSuggester(this.app, text.inputEl, {
+                const suggester: fontSuggester | undefined = Platform.isMobile || Platform.isMacOS ? undefined : new fontSuggester(this.app, text.inputEl, {
                     isScrollable: true,
                     style: `max-height: 200px;
                     width: fit-content;
@@ -392,12 +401,15 @@ export class HomeTabSettingTab extends PluginSettingTab{
 
                 text.onChange(async (value) => {
                     value = value.indexOf(' ') >= 0 ? `"${value}"` : value //Restore "" if font name contains whitespaces
-                    if(isMobile || suggester && (await suggester.getInstalledFonts()).includes(value)){
+                    if((suggester && (await suggester.getInstalledFonts()).includes(value)) || checkFont(value) ){
                         this.plugin.settings.font = value
                         this.plugin.saveSettings()
+                        invalidFontIcon.toggleVisibility(false)
+                    }
+                    else{
+                        invalidFontIcon.toggleVisibility(true)
                     }
                 })
-
                 .inputEl.parentElement?.addClass('wide-input-container')
             })
         }
