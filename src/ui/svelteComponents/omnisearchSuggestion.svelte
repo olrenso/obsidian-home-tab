@@ -12,6 +12,7 @@
 
     export let suggestion: ResultNoteApi
 
+    export let basename: string
     export let excerpt: string
     
     let fileExtension = getExtensionFromFilename(suggestion.path)
@@ -24,8 +25,11 @@
     suggestionTitleClass={'omnisearch-result__title-container'}>
     <svelte:fragment slot="suggestion-title">
         <span class="omnisearch-result__title">
-            <File size={15}/>
-            <span>{suggestion.basename}</span>
+            <span>
+                <File size={15}/>
+            </span>
+            <!-- <span>{suggestion.basename}</span> -->
+            <span>{@html basename}</span>
             <span class="omnisearch-result__extension">{`.${fileExtension}`}</span>
             {#if suggestion.matches.length > 0}
                 <span class="omnisearch-result__counter">{`${suggestion.matches.length} match${suggestion.matches.length > 1 ? 'es' : ''}`}</span>

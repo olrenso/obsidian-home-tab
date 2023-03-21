@@ -26,7 +26,7 @@ export class IconSelectionModal extends Modal{
         iconSetting
             .addExtraButton((button) => {button
                 .setIcon('alert-circle')
-                .setTooltip('The path/link/icon is not valid.')
+                .setTooltip('The icon id is not valid.')
                 invalidInputIcon = button.extraSettingsEl
                 invalidInputIcon.toggleVisibility(false)
                 invalidInputIcon.addClass('mod-warning')})
@@ -41,7 +41,7 @@ export class IconSelectionModal extends Modal{
                 text
                 .setPlaceholder('Type to start search...')
                 .setValue(this.icon ?? '')
-                .onChange(async (value) => {
+                .onChange(value => {
                     // if(value === '' || value == '/'){
                     //     invalidInputIcon.toggleVisibility(false)
                     //     return

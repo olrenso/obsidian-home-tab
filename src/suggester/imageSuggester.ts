@@ -17,9 +17,9 @@ export default class ImageFileSuggester extends PopoverTextInputSuggester<Fuse.F
     }
 
     useSelectedItem(selectedItem: Fuse.FuseResult<TFile>): void {
-        this.inputEl.value = selectedItem.item.path;
+        this.inputEl.value = selectedItem.item.path
         this.inputEl.trigger("input")
-        this.close()
+        this.onInput().then(() => this.close())
     }
 
     getDisplayElementComponentType(): typeof FileSuggestion{

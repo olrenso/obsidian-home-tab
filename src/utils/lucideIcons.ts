@@ -138,7 +138,7 @@ export const lucideIcons = [
     "calendar-plus",
     "calendar-range",
     "calendar-search",
-    "calendar-x-2",
+    // "calendar-x-2", Not available in Obsidian
     "calendar-x",
     "calendar",
     "camera-off",

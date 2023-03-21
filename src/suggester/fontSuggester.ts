@@ -29,9 +29,9 @@ export default class fontSuggester extends PopoverTextInputSuggester<Fuse.FuseRe
     }
 
     useSelectedItem(selectedItem: Fuse.FuseResult<string>): void {
-        this.inputEl.value = selectedItem.item.replace(/"/g, ``);
+        this.inputEl.value = selectedItem.item.replace(/"/g, ``)
         this.inputEl.trigger("input")
-        this.close()
+        this.onInput().then(() => this.close())
     }
 
     getDisplayElementComponentType(): typeof FontSuggestion{

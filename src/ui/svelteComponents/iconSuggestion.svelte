@@ -10,13 +10,17 @@
     export let selectedItemIndex: number
     export let suggestion: Fuse.FuseResult<string>
 
+    export let displayIcon: boolean
+
 </script>
 
 <Suggestion {index} {suggester} {textInputSuggester} {selectedItemIndex}>
     <svelte:fragment slot="suggestion-title">{suggestion.item}</svelte:fragment>
     <svelte:fragment slot="suggestion-aux">
-        <span class="suggestion-flair">
-            {@html getIcon(suggestion.item, 20)?.outerHTML}
-        </span>
+        {#if displayIcon}
+            <span class="suggestion-flair">
+                {@html getIcon(suggestion.item)?.outerHTML}
+            </span>
+        {/if}
     </svelte:fragment>
 </Suggestion>

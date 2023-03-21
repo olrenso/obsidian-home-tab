@@ -99,13 +99,14 @@ export default class OmnisearchSuggester extends TextInputSuggester<ResultNoteAp
     }
 
     
-    getDisplayElementProps(suggestion: ResultNoteApi): {excerpt: string}{
-        let content = suggestion.excerpt
+    getDisplayElementProps(suggestion: ResultNoteApi): {basename: string, excerpt: string}{
         const escapedWords = suggestion.foundWords.map(word => escapeStringForRegExp(word))
-
-        content = content.replaceAll(concatenateStringsToRegex(escapedWords),(value) => `<span class="suggestion-highlight omnisearch-highlight omnisearch-default-highlight">${value}</span>`)
-
-        return {excerpt: content}
+        const regex = concatenateStringsToRegex(escapedWords, 'gi')
+        
+        let content = this.highlightMatches(suggestion.excerpt, regex)
+        let basename = this.highlightMatches(suggestion.basename, regex)
+        
+        return {basename: basename, excerpt: content}
     }
 
     getDisplayElementComponentType(): typeof OmnisearchSuggestion{
@@ -119,5 +120,9 @@ export default class OmnisearchSuggester extends TextInputSuggester<ResultNoteAp
         else{
             this.view.leaf.openFile(file);
         }
+    }
+
+    private highlightMatches(content: string, regexMatches: RegExp): string{
+        return content.replaceAll(regexMatches, (value) => `<span class="suggestion-highlight omnisearch-highlight omnisearch-default-highlight">${value}</span>`)
     }
 }

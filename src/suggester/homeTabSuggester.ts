@@ -125,13 +125,15 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
     updateUnresolvedFiles(){
         const unresolvedFiles = getUnresolvedMarkdownFiles()
         let newFiles = false
-        unresolvedFiles.forEach((unresolvedFile) => {
-            if(!this.files.includes(unresolvedFile)){
-                this.files.push(unresolvedFile)
-                newFiles = true
-            }
-        })
-        if(newFiles) this.fuzzySearch.updateSearchArray(this.files)
+        if(this.files){
+            unresolvedFiles.forEach((unresolvedFile) => {
+                if(!this.files.includes(unresolvedFile)){
+                    this.files.push(unresolvedFile)
+                    newFiles = true
+                }
+            })
+            if(newFiles) this.fuzzySearch.updateSearchArray(this.files)
+        }
     }
 
     updateSearchfilesList(file:TFile, oldPath?: string){
