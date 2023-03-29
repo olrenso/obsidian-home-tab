@@ -1,13 +1,13 @@
 <script lang="ts">
     import SearchBar from './searchBar.svelte';
     import type { HomeTabSettings } from 'src/settings';
-    import { pluginSettingsStore, recentFiles, starredFiles} from '../store'
+    import { pluginSettingsStore, recentFiles, bookmarkedFiles } from '../store'
     import { getIcon, View } from 'obsidian'
     import type { EmbeddedHomeTab, HomeTabSearchBar as HomeTabSearchBarCls } from '../homeView';
 	import type { recentFile } from 'src/recentFiles';
-	import StarredFiles from './starredFiles.svelte';
+	import BookmarkedFiles from './bookmarkedFiles.svelte';
 	import RecentFiles from './recentFiles.svelte';
-	import type { customStarredFile } from 'src/starredFiles';
+	import type { bookmarkedFile } from 'src/bookmarkedFiles';
 	import type HomeTab from 'src/main';
     
     export let view: View
@@ -16,15 +16,15 @@
     export let embeddedView: EmbeddedHomeTab | undefined = undefined
 
     // let viewType: 'embed' | 'standalone' = view instanceof HomeTabView ? 'standalone' : 'embed'
-    let starredFileList: customStarredFile[] = []
+    let bookmarkedFileList: bookmarkedFile[] = []
     let pluginSettings: HomeTabSettings
     let recentFileList: recentFile[] = []
     
     pluginSettingsStore.subscribe((settings) => {
         pluginSettings = settings
     
-        if(pluginSettings.showStarredFiles){
-            starredFiles.subscribe((files) => starredFileList = files)
+        if(pluginSettings.showbookmarkedFiles){
+            bookmarkedFiles.subscribe((files) => bookmarkedFileList = files)
         }
         if(pluginSettings.showRecentFiles){
             recentFiles.subscribe((files) => recentFileList = files)
@@ -34,12 +34,12 @@
     const vaultAdapter = app.vault.adapter
     const gradientUniqueId = Math.random()
     // const gradientUniqueId = view.leaf.activeTime
-    const isStarredPluginEnabled = app.internalPlugins.getPluginById('starred') ? true : false
+    const isbookmarkedPluginEnabled = app.internalPlugins.getPluginById('bookmarks') ? true : false
 
     // @ts-ignore
     const renderRecentFiles: boolean = embeddedView ? embeddedView.recentFiles : pluginSettings.showRecentFiles
     // @ts-ignore
-    const renderStarredFiles: boolean = embeddedView ? embeddedView.starredFiles : pluginSettings.showStarredFiles
+    const renderbookmarkedFiles: boolean = embeddedView ? embeddedView.bookmarkedFiles : pluginSettings.showbookmarkedFiles
 </script>
   
 <main class="home-tab" class:embedded={embeddedView}>
@@ -99,8 +99,8 @@
     
     <SearchBar {HomeTabSearchBar} embedded={embeddedView ? true : false}/>
 
-    {#if isStarredPluginEnabled && starredFileList && renderStarredFiles}
-        <StarredFiles {starredFileList} {view} {pluginSettings} starredFileManager={plugin.starredFileManager}/>
+    {#if isbookmarkedPluginEnabled && bookmarkedFileList && renderbookmarkedFiles}
+        <BookmarkedFiles bookmarkedFiles={bookmarkedFileList} {view} {pluginSettings} bookmarkedFileManager={plugin.bookmarkedFileManager}/>
     {/if}
 
     {#if plugin.recentFileManager && recentFileList.length > 0  && renderRecentFiles}

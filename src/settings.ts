@@ -6,8 +6,8 @@ import ImageFileSuggester from './suggester/imageSuggester'
 import cssUnitValidator from './utils/cssUnitValidator'
 import isLink from './utils/isLink'
 import fontSuggester from './suggester/fontSuggester'
-import type { recentFileStored } from './recentFiles'
-import type { starredFileStore } from './starredFiles'
+import type { recentFileStore } from './recentFiles'
+import type { bookmarkedFileStore } from './bookmarkedFiles'
 import { checkFont } from './utils/fontValidator'
 
 type ColorChoices = 'default' | 'accentColor' | 'custom'
@@ -38,7 +38,7 @@ export interface HomeTabSettings extends ObjectKeys{
     fontColorType: ColorChoices
     fontWeight: number
     maxResults: number
-    showStarredFiles: boolean
+    showbookmarkedFiles: boolean
     showRecentFiles: boolean
     maxRecentFiles: number
     storeRecentFile: boolean
@@ -47,8 +47,8 @@ export interface HomeTabSettings extends ObjectKeys{
     showShortcuts: boolean
     markdownOnly: boolean
     unresolvedLinks: boolean
-    recentFilesStore: recentFileStored[]
-    starredFileStore: starredFileStore[]
+    recentFilesStore: recentFileStore[]
+    bookmarkedFileStore: bookmarkedFileStore[]
     searchDelay: number
     replaceNewTabs: boolean
     newTabOnStart: boolean
@@ -70,7 +70,7 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     fontColorType: 'default', 
     fontWeight: 600,
     maxResults: 5,
-    showStarredFiles: app.internalPlugins.getPluginById('starred') ? true : false,
+    showbookmarkedFiles: app.internalPlugins.getPluginById('bookmarks') ? true : false,
     showRecentFiles: false,
     maxRecentFiles: 5,
     storeRecentFile: true,
@@ -80,7 +80,7 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     markdownOnly: false,
     unresolvedLinks: false,
     recentFilesStore: [],
-    starredFileStore: [],
+    bookmarkedFileStore: [],
     searchDelay: 0,
     replaceNewTabs: true,
     newTabOnStart: false,
@@ -189,17 +189,17 @@ export class HomeTabSettingTab extends PluginSettingTab{
 
 		containerEl.createEl('h2', {text: 'Files display'});
         
-        if(app.internalPlugins.getPluginById('starred')){
+        if(app.internalPlugins.getPluginById('bookmarks')){
             new Setting(containerEl)
-            .setName('Show starred files')
-            .setDesc('Show starred files under the search bar.')
+            .setName('Show bookmarked files')
+            .setDesc('Show bookmarked files under the search bar.')
             .addToggle((toggle) => toggle
-                .setValue(this.plugin.settings.showStarredFiles)
-                .onChange((value) => {this.plugin.settings.showStarredFiles = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()
-                    // if(value && !this.plugin.starredFileManager){
-                    //     this.plugin.starredFileManager = new starredFileManager(this.app, this.plugin, starredFiles)
+                .setValue(this.plugin.settings.showbookmarkedFiles)
+                .onChange((value) => {this.plugin.settings.showbookmarkedFiles = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()
+                    // if(value && !this.plugin.bookmarkedFileManager){
+                    //     this.plugin.bookmarkedFileManager = new bookmarkedFileManager(this.app, this.plugin, bookmarkedFiles)
                     // }
-                    // value ? this.plugin.starredFileManager.load() : this.plugin.starredFileManager.unload() // Detach starredFileManager instance
+                    // value ? this.plugin.bookmarkedFileManager.load() : this.plugin.bookmarkedFileManager.unload() // Detach bookmarkedFileManager instance
                 }))
         }
 

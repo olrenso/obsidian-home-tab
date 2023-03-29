@@ -9,7 +9,7 @@ export interface recentFile{
     timestamp: number,
 }
 
-export interface recentFileStored{
+export interface recentFileStore{
     filepath: string,
     timestamp: number,
 }
@@ -95,7 +95,7 @@ export class RecentFileManager extends Component{
 
     private async storeRecentFiles(): Promise<void>{
         if(this.plugin.settings.storeRecentFile){
-            let storeObj: recentFileStored[] = []
+            let storeObj: recentFileStore[] = []
             get(recentFiles).forEach((item) => storeObj.push({
                 filepath: item.file.path, // Store only the path instead of the entire TFile instance
                 timestamp: item.timestamp

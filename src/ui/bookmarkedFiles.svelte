@@ -3,51 +3,41 @@
 	import type { HomeTabSettings } from "src/settings";
 	import { IconSelectionModal } from "src/iconSelectionModal";
 	import FileDisplayItem from "./svelteComponents/fileDisplayItem.svelte";
-	import type { customStarredFile, starredFileManager } from "src/starredFiles";
+	import type { bookmarkedFile, bookmarkedFilesManager } from "src/bookmarkedFiles";
 
     export let view: View
-    export let starredFileList: customStarredFile[]
+    export let bookmarkedFiles: bookmarkedFile[]
     export let pluginSettings: HomeTabSettings
-    export let starredFileManager: starredFileManager
+    export let bookmarkedFileManager: bookmarkedFilesManager
 
     const app: App = view.leaf.app
 
     let selectedFile: TFile
 
-    const selectIconModal: IconSelectionModal = new IconSelectionModal(app, undefined, (icon) => starredFileManager.updateStarredFileIcon(selectedFile, icon))
+    const selectIconModal: IconSelectionModal = new IconSelectionModal(app, undefined, (icon) => bookmarkedFileManager.updateFileIcon(selectedFile, icon))
 
     const contextualMenu: Menu = new Menu()
             .addItem((item) => item
-                .setTitle('Unstar file')
-                .setIcon('star-off')
-                .onClick((e) => removeStar(selectedFile)))
+                .setTitle('Remove bookmark')
+                .setIcon('trash-2')
+                .onClick(() => bookmarkedFileManager.removeBookmark(selectedFile)))
             .addSeparator()
             .addItem((item) => item
                 .setTitle('Set custom icon')
                 .setIcon('plus')
                 .onClick(() => selectIconModal.open()))
-            .setUseNativeMenu(app.vault.config.nativeMenus)
-            
-    const removeStar = (file: TFile) => {
-        if(app.internalPlugins.getPluginById('starred')){
-            app.internalPlugins.plugins.starred.instance.toggleFileStar(file)
-        }
-        else{
-            new Notice("Starred plugin is not enabled")
-        }
-    }
-   
+            .setUseNativeMenu(app.vault.config.nativeMenus)  
 </script>
 
-<div class="home-tab-starred-files-container">
-    {#each starredFileList as item (item.file.path)}
+<div class="home-tab-bookmarked-files-container">
+    {#each bookmarkedFiles as item (item.file.path)}
         <FileDisplayItem file={item.file} customIcon={item.iconId} {app} {pluginSettings} {contextualMenu}
         on:itemMenu={(e) => selectedFile = e.detail.file}/>
     {/each}
 </div>
 
 <style>
-    .home-tab-starred-files-container{
+    .home-tab-bookmarked-files-container{
         display: flex;
         align-items: baseline;
         justify-content: center;

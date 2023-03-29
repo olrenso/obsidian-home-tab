@@ -47,7 +47,7 @@ export class EmbeddedHomeTab extends MarkdownRenderChild{
     plugin: HomeTab
     view: View
     recentFiles: boolean | undefined
-    starredFiles: boolean | undefined
+    bookmarkedFiles: boolean | undefined
     searchbarOnly: boolean | undefined
 
     constructor(containerEl: HTMLElement, view: View, plugin: HomeTab, codeBlockContent: string){
@@ -92,8 +92,8 @@ export class EmbeddedHomeTab extends MarkdownRenderChild{
                 case line === 'show recent files':
                     this.recentFiles = true
                     break
-                case line === 'show starred files':
-                    this.starredFiles = true
+                case line === 'show bookmarked files':
+                    this.bookmarkedFiles = true
                     break
             }
         });

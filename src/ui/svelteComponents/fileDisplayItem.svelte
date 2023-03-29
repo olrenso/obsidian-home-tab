@@ -5,7 +5,6 @@
 	import type { HomeTabSettings } from 'src/settings';
 	import { createEventDispatcher } from 'svelte';
 	import type { LucideIcon } from 'src/utils/lucideIcons';
-	import { log } from 'console';
 
     export let app: App
     export let file: TFile
@@ -33,7 +32,7 @@
     }
 </script>
 
-<div class="home-star-file-item" class:use-accent-color="{pluginSettings.selectionHighlight === 'accentColor'}"
+<div class="home-tab-file-item" class:use-accent-color="{pluginSettings.selectionHighlight === 'accentColor'}"
     on:mousedown|preventDefault="{e => handleMouseClick(e, file)}">
     
     <div class="home-tab-file-item-remove_btn" aria-label="File options"
@@ -50,7 +49,7 @@
                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="1" stroke-linecap="round" stroke-linejoin="round" 
                         class="lucide-icon lucide lucide-{customIcon}">
-                            {@html getIcon(customIcon, 24)?.innerHTML}
+                            {@html getIcon(customIcon)?.innerHTML}
             </svg>
         {:else}
             {#if fileType === 'markdown'}
@@ -74,7 +73,7 @@
 </div>
 
 <style>
-    .home-star-file-item{
+    .home-tab-file-item{
         margin: 5px;
         padding: 5px;
         border-radius: var(--radius-m);
@@ -85,10 +84,10 @@
         position: relative;
     }
 
-    .home-star-file-item:hover{
+    .home-tab-file-item:hover{
         background-color: var(--background-modifier-hover);
     }
-    .home-star-file-item.use-accent-color:hover{
+    .home-tab-file-item.use-accent-color:hover{
         color: white;
         background: var(--interactive-accent);
     }

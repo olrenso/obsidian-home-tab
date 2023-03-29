@@ -1,9 +1,9 @@
 import { MarkdownView, Plugin, WorkspaceLeaf } from 'obsidian';
 import { EmbeddedHomeTab, HomeTabView, VIEW_TYPE } from 'src/homeView';
 import { HomeTabSettingTab, DEFAULT_SETTINGS, type HomeTabSettings } from './settings'
-import { pluginSettingsStore, starredFiles } from './store'
+import { pluginSettingsStore, bookmarkedFiles } from './store'
 import { RecentFileManager } from './recentFiles';
-import { starredFileManager } from './starredFiles';
+import { bookmarkedFilesManager } from './bookmarkedFiles';
 
 declare module 'obsidian'{
 	interface App{
@@ -15,21 +15,22 @@ declare module 'obsidian'{
 	interface InternalPlugins{
 		getPluginById: Function
 		plugins: {
-			starred: StarredPlugin
+			bookmarks: BookmarksPlugin
 		}
 	}
 	interface Plugins{
 		getPlugin: (id: string) => Plugin_2
 	}
-	interface StarredPlugin extends Plugin_2{
+	interface BookmarksPlugin extends Plugin_2{
 		instance: {
-			items: StarredFile[]
-			toggleFileStar: Function
+			items: BookmarkItem[]
+			getBookmarks: () => BookmarkItem[]
+			removeItem: (item: BookmarkItem) => void
 		}
 	}
-	interface StarredFile{
+	interface BookmarkItem{
 		type: string,
-		title: string,
+		title: string | undefined,
 		path: string
 	}
 	interface config{
@@ -58,7 +59,7 @@ declare module 'obsidian'{
 export default class HomeTab extends Plugin {
 	settings: HomeTabSettings;
 	recentFileManager: RecentFileManager
-	starredFileManager: starredFileManager
+	bookmarkedFileManager: bookmarkedFilesManager
 	activeEmbeddedHomeTabViews: EmbeddedHomeTab[]
 	
 	async onload() {
@@ -89,11 +90,11 @@ export default class HomeTab extends Plugin {
 			name: 'Replace current tab',
 			callback: () => this.activateView(true)})
 
-		// Wait for all plugins to load before check if the starred plugin is enabled
+		// Wait for all plugins to load before check if the bookmarked plugin is enabled
 		this.app.workspace.onLayoutReady(() => {
-			if(this.app.internalPlugins.getPluginById('starred')){
-				this.starredFileManager = new starredFileManager(app, this, starredFiles)
-				this.starredFileManager.load()
+			if(this.app.internalPlugins.getPluginById('bookmarks')){
+				this.bookmarkedFileManager = new bookmarkedFilesManager(app, this, bookmarkedFiles)
+				this.bookmarkedFileManager.load()
 			}
 
 			this.registerMarkdownCodeBlockProcessor('search-bar', (source, el, ctx) => {
@@ -139,7 +140,7 @@ export default class HomeTab extends Plugin {
 		this.app.workspace.detachLeavesOfType(VIEW_TYPE)
 		this.activeEmbeddedHomeTabViews.forEach(view => view.unload())
 		this.recentFileManager.unload()
-		this.starredFileManager.unload()
+		this.bookmarkedFileManager.unload()
 	}
 
 	async loadSettings(): Promise<void> {

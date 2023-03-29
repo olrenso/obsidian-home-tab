@@ -1,4 +1,4 @@
-import { getLinkpath, normalizePath, TFile, type StarredFile } from 'obsidian'
+import { getLinkpath, normalizePath, TFile } from 'obsidian'
 import type { MarkdownSearchFile, SearchFile } from '../suggester/fuzzySearch'
 import { getExtensionFromFilename, getFileTypeFromExtension } from './getFileTypeUtils'
 
@@ -130,27 +130,6 @@ export function getSearchFiles(unresolvedLinks?: boolean): SearchFile[]{
     }
 
     return fileList
-}
-
-/**
- * @returns TFile array of starred files.
- */
-export function getStarredFiles(): TFile[]{
-    if(this.app.internalPlugins.getPluginById('starred')){
-        const starredItems = app.internalPlugins.plugins.starred.instance.items
-        const starredFiles: TFile[] = []
-
-        starredItems.forEach((item: StarredFile) => {
-            if (item.type === 'file'){
-                const file = app.vault.getAbstractFileByPath(item.path)
-                if (file instanceof TFile){
-                    starredFiles.push(file)
-                }
-            }
-        })
-        return starredFiles
-    }
-    return []
 }
 
 export function getParentFolderFromPath(filepath: string): string{
