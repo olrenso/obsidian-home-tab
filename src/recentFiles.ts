@@ -73,7 +73,6 @@ export class RecentFileManager extends Component{
 
     onNewMaxListLenght(newValue: number){
         const currentLenght = get(recentFiles).length
-        // console.log(currentLenght, newValue, currentLenght - newValue)
         if(newValue < currentLenght){
             this.removeRecentFiles(currentLenght - newValue)
         }

@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { File, FolderOpen } from "lucide-svelte";
 	import type { ResultNoteApi } from "src/suggester/omnisearchSuggester";
-	import type { Suggester, TextInputSuggester } from "src/suggester/suggester";
+	import type { TextInputSuggester } from "src/suggester/suggester";
 	import { getExtensionFromFilename } from "src/utils/getFileTypeUtils";
 	import Suggestion from "./suggestion.svelte";
 
     export let index: number
-    export let suggester: Suggester<ResultNoteApi>
     export let textInputSuggester: TextInputSuggester<ResultNoteApi>
     export let selectedItemIndex: number
 
@@ -19,7 +18,7 @@
     let folderPath = suggestion.path.replace(`${suggestion.basename}.${fileExtension}`, '').slice(0, -1)
 </script>
 
-<Suggestion {index} {suggester} {textInputSuggester} {selectedItemIndex}
+<Suggestion {index} {textInputSuggester} {selectedItemIndex}
     suggestionItemClass={'suggestion-item omnisearch-result'}
     suggestionContentClass={''}
     suggestionTitleClass={'omnisearch-result__title-container'}>

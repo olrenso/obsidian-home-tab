@@ -33,7 +33,7 @@ interface ISuggester{
 }
 
 export class Suggester<T>{
-    private ISuggster: ISuggester
+    private ISuggester: ISuggester
     private suggestions: T[]
     private selectedItemIndex: number
     suggestionsContainer: Writable<HTMLElement>
@@ -41,7 +41,7 @@ export class Suggester<T>{
     selectedItemIndexStore: Writable<number>
 
     constructor(ISuggester: ISuggester, scope: Scope){
-        this.ISuggster = ISuggester
+        this.ISuggester = ISuggester
 
         // Svelte store variables
         this.suggestionsStore = writable()
@@ -57,16 +57,16 @@ export class Suggester<T>{
         scope.register([], 'ArrowUp', (e) => {
             e.preventDefault()
             this.setSelectedItemIndex(this.selectedItemIndex - 1)
-            this.ISuggster.scrollSelectedItemIntoView()
+            this.ISuggester.scrollSelectedItemIntoView()
         })
         scope.register([], 'ArrowDown', (e) => {
             e.preventDefault()
             this.setSelectedItemIndex(this.selectedItemIndex + 1)
-            this.ISuggster.scrollSelectedItemIntoView()
+            this.ISuggester.scrollSelectedItemIntoView()
         })
         scope.register([], 'Enter', (e) => {
             e.preventDefault()
-            this.ISuggster.useSelectedItem(this.getSelectedItem())
+            this.ISuggester.useSelectedItem(this.getSelectedItem())
         })
     }
 
@@ -86,7 +86,6 @@ export class Suggester<T>{
     getSuggestionByIndex(index: number): T{
         return this.suggestions[index]
     }
-
     setSelectedItemIndex(newIndex: number): void{
         if (newIndex >= this.suggestions.length){
             this.selectedItemIndexStore.set(0)
@@ -122,6 +121,8 @@ export abstract class TextInputSuggester<T> implements ISuggester{
     protected closingAnimationTimeout: NodeJS.Timeout
     protected closingAnimationRunning: boolean
 
+    private inputListener: (this: HTMLInputElement, ev: Event) => any
+
     constructor(app: App, inputEl: HTMLInputElement, suggestionParentContainer: HTMLElement, viewOptions?: suggesterViewOptions, searchDelay?: number){
         this.app = app
         this.inputEl = inputEl
@@ -129,8 +130,9 @@ export abstract class TextInputSuggester<T> implements ISuggester{
         
         this.suggester = new Suggester(this, this.scope)
         
-        this.inputEl.addEventListener('input', searchDelay ? debounce(async () => await this.onInput(), searchDelay , false) : this.onInput.bind(this))
-        this.inputEl.addEventListener('focus', searchDelay ? debounce(async () => await this.onInput(), searchDelay , false) : this.onInput.bind(this))
+        this.inputListener = searchDelay ? debounce(async () => await this.onInput(), searchDelay , false) : this.onInput.bind(this)
+        this.inputEl.addEventListener('input', this.inputListener)
+        this.inputEl.addEventListener('focus', this.inputListener)
         this.inputEl.addEventListener('blur', this.close.bind(this))
         
         this.scope.register([], 'escape', this.close.bind(this))
@@ -172,7 +174,6 @@ export abstract class TextInputSuggester<T> implements ISuggester{
             target: this.suggestionContainer,
             props:{
                 textInputSuggester: this,
-                suggester: this.suggester,
                 options: this.viewOptions,
             },
             intro: true,
@@ -196,6 +197,7 @@ export abstract class TextInputSuggester<T> implements ISuggester{
                 this.closingAnimationRunning = false
             }, 200)
         }
+
         this.additionalCleaning()
         this.onClose()
     }
@@ -206,8 +208,23 @@ export abstract class TextInputSuggester<T> implements ISuggester{
         this.closingAnimationRunning = false
     }
     
+    destroy(): void{
+        this.close()
+        this.inputEl.removeEventListener('input', this.inputListener)
+        this.inputEl.removeEventListener('focus', this.inputListener)
+    }
+    
     scrollSelectedItemIntoView(): void{
         get(this.suggester.suggestionsContainer).children[this.suggester.getSelectedItemIndex()]?.scrollIntoView({behavior: 'auto', block: 'nearest', inline: 'nearest'})
+    }
+    
+    getSuggester(): Suggester<T>{
+        return this.suggester
+    }
+
+    setInput(input: string): void{
+        this.inputEl.value = input
+        this.inputEl.dispatchEvent(new Event("input")) // Trigger input
     }
 
     abstract getSuggestions(input: string): T[] | Promise<T[]>

@@ -2,11 +2,11 @@ import type Fuse from 'fuse.js'
 import { normalizePath, Platform, TAbstractFile, TFile, View, type App } from 'obsidian'
 import { DEFAULT_FUSE_OPTIONS, FileFuzzySearch, type SearchFile } from './fuzzySearch'
 import type HomeTab from '../main'
-import type { HomeTabSearchBar } from 'src/homeView'
+import type HomeTabSearchBar from "src/homeTabSearchbar"
 import { generateSearchFile,  getParentFolderFromPath,  getSearchFiles, getUnresolvedMarkdownFiles } from 'src/utils/getFilesUtils'
 import { TextInputSuggester } from './suggester'
 import { generateHotkeySuggestion } from 'src/utils/htmlUtils'
-import { isValidExtension, isValidFileType, type FileExtension, type FileType } from 'src/utils/getFileTypeUtils'
+import { isValidExtension, type FileExtension, type FileType } from 'src/utils/getFileTypeUtils'
 import { get } from 'svelte/store'
 import HomeTabFileSuggestion from 'src/ui/svelteComponents/homeTabFileSuggestion.svelte'
 
@@ -24,8 +24,7 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
     private plugin: HomeTab
     private searchBar: HomeTabSearchBar
 
-    private activeExt: FileType | FileExtension | null
-    private activeExtEl: HTMLElement
+    private activeFilter: FileType | FileExtension  | null
 
     constructor(app: App, plugin: HomeTab, view: View, searchBar: HomeTabSearchBar) {
         super(app, get(searchBar.searchBarEl), get(searchBar.suggestionContainerEl), {
@@ -43,7 +42,6 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
         this.plugin = plugin
         this.view = view
         this.searchBar = searchBar
-        this.searchBar.activeExtEl.subscribe(element => this.activeExtEl = element)
 
         this.app.metadataCache.onCleanCache(() => {
             this.plugin.settings.markdownOnly ? this.files = this.filterSearchFileArray('markdown', getSearchFiles(this.plugin.settings.unresolvedLinks)) : this.files = getSearchFiles(this.plugin.settings.unresolvedLinks)
@@ -66,55 +64,22 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
             await this.handleFileCreation(undefined, true)
         })
 
-        this.inputEl.addEventListener('keydown', (e) => {
-            // if(this.plugin.settings.markdownOnly) return
-            // If the input field is empty and an active filter is active remove it
-            if(e.key === 'Backspace'){
-                const inputValue = this.inputEl.value
-                if(inputValue != '') return
-                if(this.activeExt){
-                    this.activeExt = null
-                    this.fuzzySearch.updateSearchArray(this.files)
-                    this.activeExtEl.toggleClass('hide', true)
-                }
-            }
-
-            if(e.key === 'Tab'){
-                e.preventDefault()
-                // Activate search filter with tab
-                const inputValue = this.inputEl.value as FileType | FileExtension
-                if (isValidExtension(inputValue) || isValidFileType(inputValue)){
-                    this.activeExtEl.setText(inputValue)
-                    this.activeExtEl.toggleClass('hide', false)
-                    this.activeExt = inputValue
-                    
-                    this.app.metadataCache.onCleanCache(() => {
-                        this.fuzzySearch.updateSearchArray(this.filterSearchFileArray(inputValue, this.plugin.settings.markdownOnly ? getSearchFiles(this.plugin.settings.unresolvedLinks) : this.files))
-                    })
-                    
-                    this.inputEl.value = ''
-                    this.suggester.setSuggestions([]) // Reset search suggestions
-                    this.close()
-                }
-            }
-        })
-
         this.view.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => { if(file instanceof TFile){this.updateSearchfilesList(file)}}))
         this.view.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => { if(file instanceof TFile){this.updateSearchfilesList(file)}}))
         this.view.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => { if(file instanceof TFile){this.updateSearchfilesList(file, oldPath)}}))
         this.view.registerEvent(this.app.metadataCache.on('resolved', () => this.updateUnresolvedFiles()))
     }
 
-    updateSearchBarContainerEl(isActive: boolean){
+    updateSearchBarContainerElState(isActive: boolean){
         this.inputEl.parentElement?.toggleClass('is-active', isActive)
     }
 
     onOpen(): void {
-        this.updateSearchBarContainerEl(this.suggester.getSuggestions().length > 0 ? true : false)    
+        this.updateSearchBarContainerElState(this.suggester.getSuggestions().length > 0 ? true : false)    
     }
 
     onClose(): void {
-        this.updateSearchBarContainerEl(false)
+        this.updateSearchBarContainerElState(false)
     }
 
     filterSearchFileArray(filterKey: FileType | FileExtension, fileArray: SearchFile[]): SearchFile[]{
@@ -163,7 +128,7 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
     }
 
     onNoSuggestion(): void {
-        if(!this.activeExt || this.activeExt === 'markdown' || this.activeExt === 'md'){
+        if(!this.activeFilter || this.activeFilter === 'markdown' || this.activeFilter === 'md'){
             const input = this.inputEl.value
             if (!!input) {
                 this.suggester.setSuggestions([{
@@ -255,5 +220,16 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
         else{
             this.view.leaf.openFile(file);
         }
+    }
+
+    setFileFilter(filterKey: FileType | FileExtension): void{
+        this.activeFilter = filterKey
+        
+        this.app.metadataCache.onCleanCache(() => {
+            this.fuzzySearch.updateSearchArray(this.filterSearchFileArray(filterKey, this.plugin.settings.markdownOnly ? getSearchFiles(this.plugin.settings.unresolvedLinks) : this.files))
+        })
+        
+        this.suggester.setSuggestions([]) // Reset search suggestions
+        this.close()
     }
 }

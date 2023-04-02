@@ -2,9 +2,11 @@
 	import type { Suggester, TextInputSuggester } from "src/suggester/suggester";
 
     export let index: number
-    export let suggester: Suggester<any>
+    // export let suggester: Suggester<any>
     export let textInputSuggester: TextInputSuggester<any>
     export let selectedItemIndex: number
+
+    let suggester: Suggester<any> = textInputSuggester.getSuggester()
 
     export let suggestionItemClass: string | undefined = undefined
     export let suggestionContentClass: string | undefined = undefined

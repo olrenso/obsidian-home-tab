@@ -2,6 +2,7 @@ import Fuse from "fuse.js";
 import type { TFile } from "obsidian";
 import { getImageFiles, getMarkdownSearchFiles} from "src/utils/getFilesUtils";
 import type { FileType } from "src/utils/getFileTypeUtils"
+import type { SurfingItem } from "./surfingSuggester";
 
 export const DEFAULT_FUSE_OPTIONS: Fuse.IFuseOptions<any> = {
     includeScore : true,
@@ -127,3 +128,10 @@ export class ImageFileFuzzySearch extends fuzzySearch<TFile>{
         super(searchArray, searchOptions)
     }
 }
+
+export class SurfingItemFuzzySearch extends fuzzySearch<SurfingItem>{
+    constructor(surfingItems: SurfingItem[], searchOptions?: Fuse.IFuseOptions<SurfingItem>){
+        super(surfingItems, searchOptions)
+    }
+}
+

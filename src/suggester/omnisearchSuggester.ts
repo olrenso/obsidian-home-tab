@@ -1,6 +1,6 @@
 import { Platform, TFile, View, type App } from 'obsidian'
 import type HomeTab from '../main'
-import type { HomeTabSearchBar } from 'src/homeView'
+import type HomeTabSearchBar from "src/homeTabSearchbar"
 import { TextInputSuggester } from './suggester'
 import { generateHotkeySuggestion } from 'src/utils/htmlUtils'
 import { get } from 'svelte/store'

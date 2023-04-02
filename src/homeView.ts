@@ -1,45 +1,9 @@
 import { FileView, MarkdownRenderChild, View, WorkspaceLeaf } from "obsidian";
 import type HomeTab from "./main";
 import Homepage from './ui/homepage.svelte'
-import { writable, type Writable, get} from "svelte/store";
-import HomeTabFileSuggester from "src/suggester/homeTabSuggester";
-import OmnisearchSuggester from "./suggester/omnisearchSuggester";
+import HomeTabSearchBar from "./homeTabSearchbar";
 
 export const VIEW_TYPE = "home-tab-view";
-
-export class HomeTabSearchBar{
-    protected view: View
-    protected plugin: HomeTab
-    public fileSuggester: HomeTabFileSuggester | OmnisearchSuggester
-    public activeExtEl: Writable<HTMLElement>
-    public searchBarEl: Writable<HTMLInputElement>
-    public suggestionContainerEl: Writable<HTMLElement>
-    private onLoad: Function | undefined
-
-    constructor(plugin: HomeTab, view: View, onLoad?: Function){
-        this.view = view
-        this.plugin = plugin
-        this.searchBarEl = writable()
-        this.activeExtEl = writable()
-        this.suggestionContainerEl = writable()
-        this.onLoad = onLoad
-    }
-
-    public focusSearchbar(): void{
-        // Set cursor on search bar
-        if(this.searchBarEl) get(this.searchBarEl).focus()
-    }
-
-    public load(): void{
-        if(this.plugin.settings.omnisearch && this.plugin.app.plugins.getPlugin('omnisearch')){
-            this.fileSuggester = new OmnisearchSuggester(this.plugin.app, this.plugin, this.view, this)
-        }
-        else{
-            this.fileSuggester = new HomeTabFileSuggester(this.plugin.app, this.plugin, this.view, this)
-        }
-        this.onLoad ? this.onLoad() : null
-    }
-}
 
 export class EmbeddedHomeTab extends MarkdownRenderChild{
     searchBar: HomeTabSearchBar

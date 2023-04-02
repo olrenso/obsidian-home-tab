@@ -1,5 +1,4 @@
 <script lang="ts">
-
     let filename: string
     let filePath: string
     let fileDesc: string

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Platform } from "obsidian";
-    import type { HomeTabSearchBar } from "../homeView";
-
+	import { filterKeys, type FilterKey, type SearchBarFilterType } from "src/homeTabSearchbar";
+    import type HomeTabSearchBar from "src/homeTabSearchbar";
+    
     export let HomeTabSearchBar: HomeTabSearchBar
     export let embedded: boolean = false
     const searchBarEl = HomeTabSearchBar.searchBarEl
@@ -9,14 +10,40 @@
     const container = HomeTabSearchBar.suggestionContainerEl
     // @ts-ignore
     const isPhone = Platform.isPhone
+
+    let inputValue = ''
+
+    function handleKeydown(e: KeyboardEvent): void{
+        // If the input field is empty and a filter is active remove it
+        if(e.key === 'Backspace'){
+            if(inputValue != '') return
+            if(HomeTabSearchBar.activeFilter){
+                HomeTabSearchBar.updateActiveSuggester('default')
+                // this.fileSuggester = new HomeTabFileSuggester(this.plugin.app, this.plugin, this.view, this)
+                // this.fuzzySearch.updateSearchArray(this.files)
+                // this.activeFilterEl.toggleClass('hide', true)
+            }
+        }
+
+        if(e.key === 'Tab'){
+            e.preventDefault()
+            const key = inputValue.toLowerCase()
+            // Activate search filter with tab
+            if(filterKeys.find(item => item === key)){
+                HomeTabSearchBar.updateActiveSuggester(key as FilterKey)
+            }
+        }
+    }
+
 </script>
 
 <div class="home-tab-searchbar-container" bind:this={$container}>
     <div class="home-tab-searchbar"
         class:embedded={embedded}
         style:width={embedded || isPhone ? "90%" : "50%"}>
-        <div class='nav-file-tag home-tab-suggestion-file-tag hide' bind:this={$activeExtEl}>PNG</div>
-        <input type="search" spellcheck="false" placeholder="Type to start search..." bind:this={$searchBarEl}>
+        <div class='nav-file-tag home-tab-suggestion-file-tag hide' bind:this={$activeExtEl}></div>
+        <input type="search" spellcheck="false" placeholder="Type to start search..." bind:value={inputValue} bind:this={$searchBarEl}
+        on:keydown={(e) => handleKeydown(e)}>
     </div>
 </div>
 

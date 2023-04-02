@@ -3,9 +3,10 @@
     import { slide } from 'svelte/transition'
 	import type { Suggester, TextInputSuggester, suggesterViewOptions } from '../suggester/suggester';
 
-    export let suggester: Suggester<any>
     export let options: suggesterViewOptions
     export let textInputSuggester: TextInputSuggester<any>
+
+    let suggester: Suggester<any> = textInputSuggester.getSuggester()
 
     let suggestions: any[]
     suggester.suggestionsStore.subscribe((value) => suggestions = value)
@@ -14,6 +15,7 @@
     suggester.selectedItemIndexStore.subscribe((value) => selectedItemIndex = value)
     
     const suggestionWrapper = suggester.suggestionsContainer
+
 </script>
 
 {#if suggestions && suggestions.length > 0}
@@ -24,8 +26,8 @@
             style="{options.style ?? ''}" bind:this={$suggestionWrapper}>
             {#each suggestions as suggestion, index (suggestion)}
                 <svelte:component this={textInputSuggester.getDisplayElementComponentType()}
-                    {index} {suggestion} {suggester} {textInputSuggester} {selectedItemIndex}
-                    {... textInputSuggester.getDisplayElementProps(suggestion)}/>
+                                {index} {suggestion} {textInputSuggester} {selectedItemIndex}
+                                {... textInputSuggester.getDisplayElementProps(suggestion)}/>
             {/each}
         </div>
         {#if options.additionalModalInfo}

@@ -3,7 +3,8 @@
     import type { HomeTabSettings } from 'src/settings';
     import { pluginSettingsStore, recentFiles, bookmarkedFiles } from '../store'
     import { getIcon, View } from 'obsidian'
-    import type { EmbeddedHomeTab, HomeTabSearchBar as HomeTabSearchBarCls } from '../homeView';
+    import type { EmbeddedHomeTab } from '../homeView';
+    import type HomeTabSearchBar from 'src/homeTabSearchbar';
 	import type { recentFile } from 'src/recentFiles';
 	import BookmarkedFiles from './bookmarkedFiles.svelte';
 	import RecentFiles from './recentFiles.svelte';
@@ -11,7 +12,7 @@
 	import type HomeTab from 'src/main';
     
     export let view: View
-    export let HomeTabSearchBar: HomeTabSearchBarCls
+    export let HomeTabSearchBar: HomeTabSearchBar
     export let plugin: HomeTab
     export let embeddedView: EmbeddedHomeTab | undefined = undefined
 

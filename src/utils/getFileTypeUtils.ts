@@ -7,13 +7,18 @@ const fileTypeLookupTable: FileTypeLookupTable = {
     audio : ['mp3', 'wav', 'm4a', 'ogg', '3gp', 'flac'],
     markdown : ['md'],
     pdf : ['pdf'],
+    canvas: ['canvas'],
 }
 
 type FileTypeLookupTable = {[key in FileType]: string[]}
-export type FileType = 'image' | 'video' | 'audio' | 'markdown' | 'pdf'
-
-export type FileExtension = 'jpg' | 'jpeg' | 'png' | 'svg' | 'gif' | 'bmp' | 'mp4' | 'webm' | 'ogv' | 'mov' | 'mkv' | 
-                            'mp3' | 'wav' | 'm4a' | 'ogg' | '3gp' | 'flac' | 'md' | 'pdf'
+export const fileTypes = ['image', 'video', 'audio', 'markdown', 'pdf', 'canvas'] as const
+export type FileType = typeof fileTypes[number]
+// export type FileType = 'image' | 'video' | 'audio' | 'markdown' | 'pdf'
+export const fileExtensions = ['jpg', 'jpeg', 'png', 'svg', 'gif', 'bmp', 'mp4', 'webm', 'ogv', 'mov', 'mkv', 
+                        'mp3', 'wav', 'm4a', 'ogg', '3gp', 'flac', 'md', 'pdf', 'canvas'] as const
+export type FileExtension = typeof fileExtensions[number]
+// export type FileExtension = 'jpg' | 'jpeg' | 'png' | 'svg' | 'gif' | 'bmp' | 'mp4' | 'webm' | 'ogv' | 'mov' | 'mkv' | 
+//                             'mp3' | 'wav' | 'm4a' | 'ogg' | '3gp' | 'flac' | 'md' | 'pdf'
 
 
 export function getFileTypeFromExtension(extension: string): FileType | undefined{

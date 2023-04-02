@@ -2,11 +2,10 @@
     import type Fuse from 'fuse.js'
 	import { FilePlus, FileQuestion, Forward, Folder } from "lucide-svelte";
     import type { SearchFile } from "src/suggester/fuzzySearch";
-	import type { Suggester, TextInputSuggester } from "src/suggester/suggester";
+	import type { TextInputSuggester } from "src/suggester/suggester";
 	import Suggestion from './suggestion.svelte';
 
     export let index: number
-    export let suggester: Suggester<SearchFile>
     export let textInputSuggester: TextInputSuggester<SearchFile>
     export let selectedItemIndex: number
     export let suggestion: Fuse.FuseResult<SearchFile>
@@ -17,7 +16,7 @@
     let suggestionItem = suggestion.item
 </script>
 
-<Suggestion {index} {suggester} {textInputSuggester} {selectedItemIndex}
+<Suggestion {index} {textInputSuggester} {selectedItemIndex}
     suggestionTitleClass={`suggestion-title home-tab-suggestion-title ${suggestionItem.isUnresolved ? 'is-unresolved' : ''}`}>
     <!-- File name (or alias) -->
     <svelte:fragment slot="suggestion-title">
