@@ -5,7 +5,7 @@ import type HomeTabSearchBar from "src/homeTabSearchbar"
 import { TextInputSuggester } from './suggester'
 import { generateHotkeySuggestion } from 'src/utils/htmlUtils'
 import { get } from 'svelte/store'
-import SurfingSuggestion from 'src/ui/svelteComponents/SurfingSuggestion.svelte'
+import SurfingSuggestion from 'src/ui/svelteComponents/surfingSuggestion.svelte'
 import { SurfingItemFuzzySearch } from './fuzzySearch'
 
 interface SurfingPlugin extends Plugin_2{

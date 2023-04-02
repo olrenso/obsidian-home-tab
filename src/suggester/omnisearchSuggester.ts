@@ -87,7 +87,7 @@ export default class OmnisearchSuggester extends TextInputSuggester<ResultNoteAp
     // }
     
     async getSuggestions(input: string): Promise<ResultNoteApi[]> {
-        const suggestions = await this.omnisearch.search(input)
+        const suggestions = (await this.omnisearch.search(input)).splice(0, this.plugin.settings.maxResults)
         return suggestions
     }
 
@@ -103,7 +103,7 @@ export default class OmnisearchSuggester extends TextInputSuggester<ResultNoteAp
         const escapedWords = suggestion.foundWords.map(word => escapeStringForRegExp(word))
         const regex = concatenateStringsToRegex(escapedWords, 'gi')
         
-        let content = this.highlightMatches(suggestion.excerpt, regex)
+        let content = this.plugin.settings.showOmnisearchExcerpt ? this.highlightMatches(suggestion.excerpt, regex) : ''
         let basename = this.highlightMatches(suggestion.basename, regex)
         
         return {basename: basename, excerpt: content}

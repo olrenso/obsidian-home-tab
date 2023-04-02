@@ -1,4 +1,4 @@
-import type { View } from "obsidian";
+import { Notice, type App, type View } from "obsidian";
 import type HomeTab from "./main";
 import { writable, type Writable, get } from "svelte/store";
 import HomeTabFileSuggester from "src/suggester/homeTabSuggester";
@@ -31,6 +31,7 @@ export const filterKeys = [...filterKeysLookupTable.omnisearch, ...filterKeysLoo
 export type FilterKey = typeof filterKeys[number]
 
 export default class HomeTabSearchBar{
+    private app: App
     private onLoad: Function | undefined
     public activeFilter: SearchBarFilterType
     
@@ -43,6 +44,7 @@ export default class HomeTabSearchBar{
     public suggestionContainerEl: Writable<HTMLElement>
 
     constructor(plugin: HomeTab, view: View, onLoad?: Function) {
+        this.app = view.app
         this.view = view;
         this.plugin = plugin;
         this.searchBarEl = writable();
@@ -88,18 +90,35 @@ export default class HomeTabSearchBar{
         switch(filter){
             case 'default':
                 filterEl.toggleClass('hide', true)
-                this.fileSuggester = new HomeTabFileSuggester(this.plugin.app, this.plugin, this.view, this)
+                if (this.plugin.settings.omnisearch && this.plugin.app.plugins.getPlugin('omnisearch')) {
+                    this.fileSuggester = new OmnisearchSuggester(this.plugin.app, this.plugin, this.view, this);
+                }
+                else {
+                    this.fileSuggester = new HomeTabFileSuggester(this.plugin.app, this.plugin, this.view, this);
+                }
                 this.fileSuggester.setInput('')
                 break;
             case 'omnisearch':
-                filterEl.toggleClass('hide', false)
-                this.fileSuggester = new OmnisearchSuggester(this.plugin.app, this.plugin, this.view, this)
-                this.fileSuggester.setInput('')
+                if(this.app.plugins.getPlugin('omnisearch')){
+                    filterEl.toggleClass('hide', false)
+                    this.fileSuggester = new OmnisearchSuggester(this.plugin.app, this.plugin, this.view, this)
+                    this.fileSuggester.setInput('')
+                }
+                else{
+                    new Notice('Omnisearch plugins is not enabled.')
+                    this.updateActiveSuggester('default')
+                }
                 break;
             case 'webSearch':
-                filterEl.toggleClass('hide', false)
-                this.fileSuggester = new SurfingSuggester(this.plugin.app, this.plugin, this.view, this)
-                this.fileSuggester.setInput('')
+                if(this.app.plugins.getPlugin('surfing')){
+                    filterEl.toggleClass('hide', false)
+                    this.fileSuggester = new SurfingSuggester(this.plugin.app, this.plugin, this.view, this)
+                    this.fileSuggester.setInput('')
+                }
+                else{
+                    new Notice('Surfing plugin is not enabled.')
+                    this.updateActiveSuggester('default')
+                }
                 break;
             case 'fileExtension':
             case 'fileType':

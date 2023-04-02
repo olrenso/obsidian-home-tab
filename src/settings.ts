@@ -54,6 +54,7 @@ export interface HomeTabSettings extends ObjectKeys{
     newTabOnStart: boolean
     closePreviousSessionTabs: boolean
     omnisearch: boolean
+    showOmnisearchExcerpt: boolean
 }
 
 export const DEFAULT_SETTINGS: HomeTabSettings = {
@@ -86,7 +87,9 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     newTabOnStart: false,
     closePreviousSessionTabs: false,
     omnisearch: false,
+    showOmnisearchExcerpt: true,
 }
+
 
 export class HomeTabSettingTab extends PluginSettingTab{
     plugin: HomeTab
@@ -119,7 +122,7 @@ export class HomeTabSettingTab extends PluginSettingTab{
         if(this.plugin.settings.newTabOnStart){
             new Setting(containerEl)
                 .setName('Close previous session tabs on start')
-                .setDesc('This will closes all the tabs and leave only one Home tab when opening Obsidian.')
+                .setDesc('Enable this to close all the tabs and leave only one Home tab on Obsidian opening.')
                 .addToggle(toggle => toggle
                     .setValue(this.plugin.settings.closePreviousSessionTabs)
                     .onChange(value => {this.plugin.settings.closePreviousSessionTabs = value; this.plugin.saveSettings()}))
@@ -128,12 +131,12 @@ export class HomeTabSettingTab extends PluginSettingTab{
 		containerEl.createEl('h2', {text: 'Search settings'});
         if(this.plugin.app.plugins.getPlugin('omnisearch')){
             new Setting(containerEl)
-                .setName('Use omnisearch')
+                .setName('Use Omnisearch')
+                .setDesc('Set Omnisearch as the default search engine.')
                 .addToggle(toggle => toggle
                     .setValue(this.plugin.settings.omnisearch)
                     .onChange(value => {this.plugin.settings.omnisearch = value; this.plugin.saveSettings(); this.display(); this.plugin.refreshOpenViews()}))
         }
-
         if(!this.plugin.settings.omnisearch){
             new Setting(containerEl)
                 .setName('Search only markdown files')
@@ -149,7 +152,7 @@ export class HomeTabSettingTab extends PluginSettingTab{
             
             new Setting(containerEl)
                 .setName('Show file path')
-                .setDesc('Display file path at the right of the filename.')
+                .setDesc('Displays file path at the right of the filename.')
                 .addToggle((toggle) => toggle
                     .setValue(this.plugin.settings.showPath)
                     .onChange((value) => {this.plugin.settings.showPath = value; this.plugin.saveSettings()}))
@@ -157,7 +160,7 @@ export class HomeTabSettingTab extends PluginSettingTab{
 
         new Setting(containerEl)
             .setName('Show shorcuts')
-            .setDesc('Display shortcuts under the search results.')
+            .setDesc('Displays shortcuts under the search results.')
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.showShortcuts)
                 .onChange((value) => {
@@ -187,12 +190,25 @@ export class HomeTabSettingTab extends PluginSettingTab{
                 .onChange((value) => {this.plugin.settings.searchDelay = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
             .then((settingEl) => this.addResetButton(settingEl, 'searchDelay'))
 
-		containerEl.createEl('h2', {text: 'Files display'});
+        if(this.plugin.app.plugins.getPlugin('omnisearch')){
+            new Setting(containerEl)
+                .setName('Show excerpt (Omnisearch)')
+                .setDesc('Shows the contextual part of the note that matches the search.')
+                .addToggle((toggle) => toggle
+                    .setValue(this.plugin.settings.showOmnisearchExcerpt)
+                    .onChange((value) => {
+                        this.plugin.settings.showOmnisearchExcerpt = value
+                        this.plugin.saveSettings()
+                    }
+                ))
+        }
+
+        containerEl.createEl('h2', {text: 'Files display'});
         
         if(app.internalPlugins.getPluginById('bookmarks')){
             new Setting(containerEl)
             .setName('Show bookmarked files')
-            .setDesc('Show bookmarked files under the search bar.')
+            .setDesc('Shows bookmarked files under the search bar.')
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.showbookmarkedFiles)
                 .onChange((value) => {this.plugin.settings.showbookmarkedFiles = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()
@@ -205,7 +221,7 @@ export class HomeTabSettingTab extends PluginSettingTab{
 
         new Setting(containerEl)
             .setName('Show recent files')
-            .setDesc('Display recent files under the search bar.')
+            .setDesc('Displays recent files under the search bar.')
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.showRecentFiles)
                 .onChange((value) => {this.plugin.settings.showRecentFiles = value; this.plugin.saveSettings(); this.display(); this.plugin.refreshOpenViews()
@@ -218,7 +234,7 @@ export class HomeTabSettingTab extends PluginSettingTab{
         if(this.plugin.settings.showRecentFiles){
             new Setting(containerEl)
             .setName('Store last recent files')
-            .setDesc('Remember the recent files of the previous session.')
+            .setDesc('Remembers the recent files of the previous session.')
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.storeRecentFile)
                 .onChange((value) => {this.plugin.settings.storeRecentFile = value; this.plugin.saveSettings()}))
