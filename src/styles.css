@@ -80,6 +80,7 @@
     align-items: center;
     justify-content: space-evenly;
     flex-wrap: wrap;
+    gap: 2px;
 }
 
 .home-tab-searchbar.is-active{
