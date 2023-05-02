@@ -13,6 +13,7 @@ import { checkFont } from './utils/fontValidator'
 type ColorChoices = 'default' | 'accentColor' | 'custom'
 type LogoChoiches = 'default' | 'imagePath' | 'imageLink' | 'lucideIcon' | 'none'
 type FontChoiches = 'interfaceFont' | 'textFont' | 'monospaceFont' | 'custom'
+type absentFileChoices = 'createFile' | 'searchOnline'
 
 interface ObjectKeys {
     [key: string]: any
@@ -55,6 +56,8 @@ export interface HomeTabSettings extends ObjectKeys{
     closePreviousSessionTabs: boolean
     omnisearch: boolean
     showOmnisearchExcerpt: boolean
+    searchOnlineUrl: string
+    absentFileBehaviour: absentFileChoices
 }
 
 export const DEFAULT_SETTINGS: HomeTabSettings = {
@@ -88,6 +91,8 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     closePreviousSessionTabs: false,
     omnisearch: false,
     showOmnisearchExcerpt: true,
+    searchOnlineUrl: 'https://www.google.com/search?q=',
+    absentFileBehaviour: 'createFile'
 }
 
 
@@ -127,6 +132,16 @@ export class HomeTabSettingTab extends PluginSettingTab{
                     .setValue(this.plugin.settings.closePreviousSessionTabs)
                     .onChange(value => {this.plugin.settings.closePreviousSessionTabs = value; this.plugin.saveSettings()}))
         }
+
+        new Setting(containerEl)
+            .setName('Absent file behaviour')
+            .setDesc('What to do if the file does not exist.')
+            .addDropdown((dropdown) => dropdown
+                .addOption('createFile', 'Create new file')
+                .addOption('searchOnline', 'Search online')
+                .setValue(this.plugin.settings.absentFileBehaviour)
+                .onChange((value: absentFileChoices) => {this.plugin.settings.absentFileBehaviour = value; this.plugin.saveSettings();}))
+            .then((settingEl) => this.addResetButton(settingEl, 'absentFileBehaviour'))
 
 		containerEl.createEl('h2', {text: 'Search settings'});
         if(this.plugin.app.plugins.getPlugin('omnisearch')){
@@ -189,6 +204,17 @@ export class HomeTabSettingTab extends PluginSettingTab{
                 .setDynamicTooltip()
                 .onChange((value) => {this.plugin.settings.searchDelay = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
             .then((settingEl) => this.addResetButton(settingEl, 'searchDelay'))
+
+        new Setting(containerEl)
+            .setName('Search online URL')
+            .setDesc('URL to query when searching online')
+            .addText((text) => text
+                .setValue(this.plugin.settings.searchOnlineUrl)
+                .onChange((value) => {
+                    this.plugin.settings.searchOnlineUrl = value
+					this.plugin.saveSettings()
+                }))
+            .then((settingEl) => this.addResetButton(settingEl, 'searchOnlineUrl'))
 
         if(this.plugin.app.plugins.getPlugin('omnisearch')){
             new Setting(containerEl)

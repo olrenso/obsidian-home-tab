@@ -1,19 +1,26 @@
 <script lang="ts">
     import type Fuse from 'fuse.js'
-	import { FilePlus, FileQuestion, Forward, Folder } from "lucide-svelte";
+	import { FilePlus, FileQuestion, Forward, Folder, Search } from "lucide-svelte";
     import type { SearchFile } from "src/suggester/fuzzySearch";
 	import type { TextInputSuggester } from "src/suggester/suggester";
+	import type { HomeTabSettings } from "src/settings";
+	import { pluginSettingsStore } from 'src/store';
 	import Suggestion from './suggestion.svelte';
 
     export let index: number
     export let textInputSuggester: TextInputSuggester<SearchFile>
     export let selectedItemIndex: number
     export let suggestion: Fuse.FuseResult<SearchFile>
+    export let pluginSettings: HomeTabSettings
 
     export let nameToDisplay: string
     export let filePath: string | undefined = undefined
 
     let suggestionItem = suggestion.item
+
+    pluginSettingsStore.subscribe((settings) => {
+        pluginSettings = settings
+    })
 </script>
 
 <Suggestion {index} {textInputSuggester} {selectedItemIndex}
@@ -43,12 +50,19 @@
         <!-- Display if a file is not created -->
         {#if !suggestionItem.isCreated}
             <div class="home-tab-suggestion-tip">
-                {#if suggestionItem.isUnresolved}
-                    <FilePlus size={15} aria-label={'Not created yet, select to create'}/>
+                {#if pluginSettings.absentFileBehaviour === 'createFile'}
+                    {#if suggestionItem.isUnresolved}
+                        <FilePlus size={15} aria-label={'Not created yet, select to create'}/>
+                    {:else}
+                        <FileQuestion size={15} aria-label={'Not exists yet, select to create'}/>
+                        <div class="suggestion-hotkey">
+                            <span>Enter to create</span>
+                        </div>
+                    {/if}
                 {:else}
-                    <FileQuestion size={15} aria-label={'Non exists yet, select to create'}/>
+                    <Search size={15} aria-label={'Not exists, select to search online'}/>
                     <div class="suggestion-hotkey">
-                        <span>Enter to create</span>
+                        <span>Enter to search online</span>
                     </div>
                 {/if}
             </div>

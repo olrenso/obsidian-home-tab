@@ -9,6 +9,7 @@ import { generateHotkeySuggestion } from 'src/utils/htmlUtils'
 import { isValidExtension, type FileExtension, type FileType } from 'src/utils/getFileTypeUtils'
 import { get } from 'svelte/store'
 import HomeTabFileSuggestion from 'src/ui/svelteComponents/homeTabFileSuggestion.svelte'
+import { HomeTabView } from 'src/homeView'
 
 declare module 'obsidian'{
     interface MetadataCache{
@@ -36,6 +37,7 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
                     {hotkey: '↵', action: 'to open'},
                     {hotkey: 'shift ↵', action: 'to create'},
                     {hotkey: 'ctrl ↵', action: 'to open in new tab'},
+                    {hotkey: 'alt ↵', action: 'to search online'},
                     {hotkey: 'esc', action: 'to dismiss'},], 
                     'home-tab-hotkey-suggestions') : undefined
                 }, plugin.settings.searchDelay)
@@ -62,6 +64,16 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
         this.scope.register(['Shift', 'Mod'], 'Enter', async(e) => {
             e.preventDefault()
             await this.handleFileCreation(undefined, true)
+        })
+        // Search online
+        this.scope.register(['Alt'], 'Enter', async(e) => {
+            e.preventDefault()
+            await this.searchOnline()
+        })
+        // Search online and keep home tab open
+        this.scope.register(['Alt', 'Mod'], 'Enter', async(e) => {
+            e.preventDefault()
+            await this.searchOnline(true)
         })
 
         this.view.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => { if(file instanceof TFile){this.updateSearchfilesList(file)}}))
@@ -163,7 +175,12 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
             this.openFile(selectedItem.item.file, newTab)
         }
         else{
-            this.handleFileCreation(selectedItem.item, newTab)
+            if(this.plugin.settings.absentFileBehaviour === 'createFile'){
+                this.handleFileCreation(selectedItem.item, newTab)
+            }
+            else if(this.plugin.settings.absentFileBehaviour === 'searchOnline'){
+                this.searchOnline(newTab)
+            }
         }
     }
 
@@ -182,6 +199,14 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
 
     getDisplayElementComponentType(): typeof HomeTabFileSuggestion{
         return HomeTabFileSuggestion
+    }
+
+    async searchOnline(newTab?: boolean): Promise<void>{
+        window.open(`${this.plugin.settings.searchOnlineUrl}${this.inputEl.value}`)
+
+        if(!newTab){ 
+            this.app.workspace.getActiveViewOfType(HomeTabView).leaf.detach();
+        }
     }
 
     async handleFileCreation(selectedFile?: SearchFile, newTab?: boolean): Promise<void>{
