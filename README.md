@@ -1,3 +1,7 @@
+## 🚧 Not currently maintained
+⚠️ Due to time constraints, I am unable to actively maintain or improve this plugin at the moment. However, your contributions are highly appreciated! Feel free to open pull requests or fork the project to continue its development.
+
+---
 # Obsidian Home tab
 Obsidian Home tab is an [Obsidian](https://obsidian.md/) plugin that adds a browser-like home default new tab with a search bar and a grid of starred files.
 
