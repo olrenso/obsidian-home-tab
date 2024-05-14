@@ -41,7 +41,7 @@ esbuild.build({
 	logLevel: "info",
 	sourcemap: prod ? false : 'inline',
 	treeShaking: true,
-	outfile: prod ? 'main.js' : '../developmentVault/.obsidian/plugins/obsidian-home-tab/main.js',
+	outfile: prod ? 'main.js' : '../developmentVault/.obsidian/plugins/home-tab/main.js',
 	plugins: [
 		esbuildSvelte({
 		  compilerOptions: { css: true },

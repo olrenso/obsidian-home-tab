@@ -28,6 +28,7 @@ The following filters are available:
 | `video` | `mp4`, `webm`, `ogv`, `mov`, `mkv` |
 | `audio` | `mp3`, `wav`, `m4a`, `ogg`, `3gp`, `flac` |
 | `pdf` | `pdf` |  
+| `canvas` | `canvas` |
 
 ![](images/filters_gif.gif)
 

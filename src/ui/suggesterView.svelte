@@ -19,7 +19,7 @@
 </script>
 
 {#if suggestions && suggestions.length > 0}
-    <div class="{options.containerClass ?? 'suggestion-container'}" 
+    <div class="{options.containerClass ?? 'suggestion-container popover suggestion-popover'}" 
         on:mousedown="{(e) => e.preventDefault()}"
         transition:slide={{duration:200, easing: quintOut}}>
         <div class="{options.suggestionClass ?? 'suggestion'} {options.additionalClasses ?? ''}" class:scrollable="{options.isScrollable}"
