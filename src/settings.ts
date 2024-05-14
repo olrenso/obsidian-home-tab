@@ -11,7 +11,7 @@ import type { bookmarkedFileStore } from './bookmarkedFiles'
 import { checkFont } from './utils/fontValidator'
 
 type ColorChoices = 'default' | 'accentColor' | 'custom'
-type LogoChoiches = 'default' | 'imagePath' | 'imageLink' | 'lucideIcon' | 'none'
+type LogoChoiches = 'default' | 'imagePath' | 'imageLink' | 'lucideIcon' | 'oldLogo' | 'none'
 type FontChoiches = 'interfaceFont' | 'textFont' | 'monospaceFont' | 'custom'
 
 interface ObjectKeys {
@@ -330,6 +330,7 @@ export class HomeTabSettingTab extends PluginSettingTab{
         logoTypeSetting
             .addDropdown((dropdown) => dropdown
                 .addOption('default', 'Obsidian logo')
+                .addOption('oldLogo', 'Obsidian old logo')
                 .addOption('imagePath', 'Local image')
                 .addOption('imageLink', 'Link')
                 .addOption('lucideIcon', 'Lucide icon')
