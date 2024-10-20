@@ -1,7 +1,7 @@
 {
 	"id": "home-tab",
 	"name": "Home tab",
-	"version": "1.2.1",
+	"version": "1.2.2",
 	"minAppVersion": "1.6.0",
 	"description": "A browser-like search tab for your local files.",
 	"author": "Renso",
