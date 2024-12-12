@@ -197,19 +197,23 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
 
         // Check if the match is from a heading
         if (this.plugin.settings.searchHeadings && suggestion.matches) {
+            // Find the first heading match
             const headingMatch = suggestion.matches.find(match => match.key === 'headings')
             if (headingMatch && typeof headingMatch.value === 'string') {
                 matchedHeading = headingMatch.value
                 // Keep the basename as nameToDisplay when it's a heading match
                 nameToDisplay = suggestion.item.basename
-            } else {
-                // Only use fuzzy search for non-heading matches
-                nameToDisplay = this.fuzzySearch.getBestMatch(suggestion, this.inputEl.value)
+                // If we have a heading match, we skip other matches like aliases
+                return {
+                    nameToDisplay: nameToDisplay,
+                    filePath: filePath,
+                    matchedHeading: matchedHeading
+                }
             }
-        } else {
-            // No heading search enabled, use normal fuzzy search
-            nameToDisplay = this.fuzzySearch.getBestMatch(suggestion, this.inputEl.value)
         }
+
+        // Only use fuzzy search for non-heading matches
+        nameToDisplay = this.fuzzySearch.getBestMatch(suggestion, this.inputEl.value)
         
         return {
             nameToDisplay: nameToDisplay,

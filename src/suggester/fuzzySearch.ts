@@ -109,10 +109,19 @@ export class FileFuzzySearch extends fuzzySearch<SearchFile>{
         
         // Check if the match is from headings
         if (searchResultElement.matches?.some(match => match.key === 'headings')) {
-            const headingMatch = searchResultElement.matches?.find(match => match.key === 'headings')
-            if (headingMatch && headingMatch.value) {
-                // Return the actual heading text that matched
-                return headingMatch.value as string
+            // Find all heading matches and sort by score
+            const headingMatches = searchResultElement.matches
+                .filter(match => match.key === 'headings')
+                .sort((a, b) => {
+                    const scoreA = a.indices[0][0] || 0
+                    const scoreB = b.indices[0][0] || 0
+                    return scoreA - scoreB
+                })
+
+            // Get the best heading match
+            const bestHeadingMatch = headingMatches[0]
+            if (bestHeadingMatch && bestHeadingMatch.value) {
+                return searchFile.basename
             }
         }
 
