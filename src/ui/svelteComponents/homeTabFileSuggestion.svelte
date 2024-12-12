@@ -1,6 +1,6 @@
 <script lang="ts">
     import type Fuse from 'fuse.js'
-	import { FilePlus, FileQuestion, Forward, Folder } from "lucide-svelte";
+	import { FilePlus, FileQuestion, Forward, Folder, Hash } from "lucide-svelte";
     import type { SearchFile } from "src/suggester/fuzzySearch";
 	import type { TextInputSuggester } from "src/suggester/suggester";
 	import Suggestion from './suggestion.svelte';
@@ -12,6 +12,7 @@
 
     export let nameToDisplay: string
     export let filePath: string | undefined = undefined
+    export let matchedHeading: string | undefined = undefined
 
     let suggestionItem = suggestion.item
 </script>
@@ -35,6 +36,13 @@
                 <div class="home-tab-suggestion-description">
                     <Forward size={15} aria-label={'Alias of'}/>
                     <span>{suggestionItem.basename}</span>
+                </div>
+            {/if}
+            <!-- If the match is from a heading -->
+            {#if matchedHeading}
+                <div class="home-tab-suggestion-description">
+                    <Hash size={15} aria-label={'Heading'}/>
+                    <span>{matchedHeading}</span>
                 </div>
             {/if}
         {/if}

@@ -47,6 +47,8 @@ export interface HomeTabSettings extends ObjectKeys{
     showShortcuts: boolean
     markdownOnly: boolean
     unresolvedLinks: boolean
+    searchTitle: boolean
+    searchHeadings: boolean
     recentFilesStore: recentFileStore[]
     bookmarkedFileStore: bookmarkedFileStore[]
     searchDelay: number
@@ -80,6 +82,8 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     showShortcuts: true,
     markdownOnly: false,
     unresolvedLinks: false,
+    searchTitle: false,
+    searchHeadings: false,
     recentFilesStore: [],
     bookmarkedFileStore: [],
     searchDelay: 0,
@@ -149,6 +153,20 @@ export class HomeTabSettingTab extends PluginSettingTab{
                 .addToggle(toggle => toggle
                     .setValue(this.plugin.settings.unresolvedLinks)
                     .onChange(value => {this.plugin.settings.unresolvedLinks = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
+            
+            new Setting(containerEl)
+                .setName('Search file titles')
+                .setDesc('Enable this to search through file titles.')
+                .addToggle(toggle => toggle
+                    .setValue(this.plugin.settings.searchTitle)
+                    .onChange(value => {this.plugin.settings.searchTitle = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
+            
+            new Setting(containerEl)
+                .setName('Search headings')
+                .setDesc('Enable this to search through document headings (# Title).')
+                .addToggle(toggle => toggle
+                    .setValue(this.plugin.settings.searchHeadings)
+                    .onChange(value => {this.plugin.settings.searchHeadings = value; this.plugin.saveSettings(); this.plugin.refreshOpenViews()}))
             
             new Setting(containerEl)
                 .setName('Show file path')

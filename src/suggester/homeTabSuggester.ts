@@ -45,7 +45,17 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
 
         this.app.metadataCache.onCleanCache(() => {
             this.plugin.settings.markdownOnly ? this.files = this.filterSearchFileArray('markdown', getSearchFiles(this.plugin.settings.unresolvedLinks)) : this.files = getSearchFiles(this.plugin.settings.unresolvedLinks)
-            this.fuzzySearch = new FileFuzzySearch(this.files, { ...DEFAULT_FUSE_OPTIONS, ignoreLocation: true, fieldNormWeight: 1.65, keys: [{name: 'basename', weight: 1.5}, {name: 'aliases', weight: 0.1}] })
+            this.fuzzySearch = new FileFuzzySearch(this.files, { 
+                ...DEFAULT_FUSE_OPTIONS, 
+                ignoreLocation: true, 
+                fieldNormWeight: 1.65, 
+                keys: [
+                    {name: 'basename', weight: 1.5}, 
+                    {name: 'aliases', weight: 0.1},
+                    ...(this.plugin.settings.searchTitle ? [{name: 'title', weight: 1.2}] : []),
+                    ...(this.plugin.settings.searchHeadings ? [{name: 'headings', weight: 1.0}] : [])
+                ] 
+            })
         })
 
         // Open file in new tab
@@ -167,16 +177,44 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
         }
     }
 
-    getDisplayElementProps(suggestion: Fuse.FuseResult<SearchFile>): {nameToDisplay: string, filePath?: string}{
-        const nameToDisplay = this.fuzzySearch.getBestMatch(suggestion, this.inputEl.value)
+    getDisplayElementProps(suggestion: Fuse.FuseResult<SearchFile>): {nameToDisplay: string, filePath?: string, matchedHeading?: string}{
+        if (!this.inputEl || !(this.inputEl instanceof HTMLInputElement)) {
+            return {
+                nameToDisplay: suggestion.item.basename,
+                filePath: undefined
+            }
+        }
+
+        let nameToDisplay = suggestion.item.basename
         let filePath: string | undefined = undefined
+        let matchedHeading: string | undefined = undefined
+
         if(this.plugin.settings.showPath){
-            filePath = suggestion.item.file ? suggestion.item.file.parent.name : getParentFolderFromPath(suggestion.item.path) // Parent folder
+            filePath = suggestion.item.file && suggestion.item.file.parent 
+                ? suggestion.item.file.parent.name 
+                : getParentFolderFromPath(suggestion.item.path)
+        }
+
+        // Check if the match is from a heading
+        if (this.plugin.settings.searchHeadings && suggestion.matches) {
+            const headingMatch = suggestion.matches.find(match => match.key === 'headings')
+            if (headingMatch && typeof headingMatch.value === 'string') {
+                matchedHeading = headingMatch.value
+                // Keep the basename as nameToDisplay when it's a heading match
+                nameToDisplay = suggestion.item.basename
+            } else {
+                // Only use fuzzy search for non-heading matches
+                nameToDisplay = this.fuzzySearch.getBestMatch(suggestion, this.inputEl.value)
+            }
+        } else {
+            // No heading search enabled, use normal fuzzy search
+            nameToDisplay = this.fuzzySearch.getBestMatch(suggestion, this.inputEl.value)
         }
         
         return {
             nameToDisplay: nameToDisplay,
-            filePath: filePath
+            filePath: filePath,
+            matchedHeading: matchedHeading
         }
     }
 

@@ -6,8 +6,8 @@ import type { SurfingItem } from "./surfingSuggester";
 
 export const DEFAULT_FUSE_OPTIONS: Fuse.IFuseOptions<any> = {
     includeScore : true,
-    // includeMatches : true,
-    // findAllMatches : true,
+    includeMatches : true,
+    findAllMatches : true,
     fieldNormWeight : 1.35,
     threshold : 0.2,
     distance: 125,
@@ -28,6 +28,8 @@ export interface SearchFile{
     basename: string
     path: string
     aliases?: string[]
+    title?: string
+    headings?: string[]
     isCreated: boolean
     isUnresolved?: boolean
     file?: TFile
@@ -105,6 +107,15 @@ export class FileFuzzySearch extends fuzzySearch<SearchFile>{
         const searchFile = searchResultElement.item
         // if(searchFile.fileType != 'markdown') return searchFile.name
         
+        // Check if the match is from headings
+        if (searchResultElement.matches?.some(match => match.key === 'headings')) {
+            const headingMatch = searchResultElement.matches?.find(match => match.key === 'headings')
+            if (headingMatch && headingMatch.value) {
+                // Return the actual heading text that matched
+                return headingMatch.value as string
+            }
+        }
+
         if (!searchFile.aliases) return searchFile.basename
 
         const searchArray: string[] = []
@@ -134,4 +145,3 @@ export class SurfingItemFuzzySearch extends fuzzySearch<SurfingItem>{
         super(surfingItems, searchOptions)
     }
 }
-

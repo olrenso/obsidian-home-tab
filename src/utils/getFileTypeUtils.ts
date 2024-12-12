@@ -1,5 +1,10 @@
 import type { TFile } from "obsidian"
+import { App } from 'obsidian'
 import { getUnresolvedLinkBasename, getUnresolvedLinkPath } from "./getFilesUtils"
+
+declare global {
+    var app: App;
+}
 
 const fileTypeLookupTable: FileTypeLookupTable = {
     image : ['jpg', 'jpeg', 'png', 'svg', 'gif', 'bmp'],
@@ -81,6 +86,20 @@ export function isUnresolved(unresolvedFile: unresolvedFile): boolean{
     }
 
     return false
+}
+
+export function isUnresolvedLink(filename: string): boolean{
+    const parentFiles = Object.entries(app.metadataCache.unresolvedLinks)
+    let isUnresolved = false
+
+    parentFiles.forEach(([_, links]) => {
+        const unresolvedLinks = Object.keys(links)
+        if(unresolvedLinks.includes(filename)){
+            isUnresolved = true
+        }
+    })
+
+    return isUnresolved
 }
 
 export function isMarkdown(file: TFile): boolean{
