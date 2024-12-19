@@ -4,7 +4,9 @@ import { writable, type Writable, get } from "svelte/store";
 import HomeTabFileSuggester from "src/suggester/homeTabSuggester";
 import OmnisearchSuggester from "./suggester/omnisearchSuggester";
 import SurfingSuggester from "./suggester/surfingSuggester";
+import WebViewerSuggester from "./suggester/webViewerSuggester";
 import { fileTypes, type FileExtension, type FileType, fileExtensions } from "./utils/getFileTypeUtils";
+import { isValidUrl } from "./utils/urlUtils";
 
 export type SearchBarFilterType = 'fileExtension' | 'fileType' | 'webSearch' | 'omnisearch' | 'default'
 
@@ -38,19 +40,48 @@ export default class HomeTabSearchBar{
     protected view: View
     protected plugin: HomeTab
     
-    public fileSuggester: HomeTabFileSuggester | OmnisearchSuggester | SurfingSuggester
+    public fileSuggester: HomeTabFileSuggester | OmnisearchSuggester | SurfingSuggester | WebViewerSuggester
     public activeExtEl: Writable<HTMLElement>
     public searchBarEl: Writable<HTMLInputElement>
     public suggestionContainerEl: Writable<HTMLElement>
 
     constructor(plugin: HomeTab, view: View, onLoad?: Function) {
-        this.app = view.app
+        this.app = view.app;
         this.view = view;
         this.plugin = plugin;
         this.searchBarEl = writable();
         this.activeExtEl = writable();
         this.suggestionContainerEl = writable();
         this.onLoad = onLoad;
+        this.activeFilter = 'default';
+    }
+
+    public setSearchBarEl(el: HTMLInputElement): void {
+        if (!el) return;
+        this.searchBarEl.set(el);
+        
+        // 添加输入事件监听
+        el.addEventListener('input', () => {
+            const query = el.value.trim();
+            this.handleInput(query);
+        });
+    }
+
+    private handleInput(query: string): void {
+        console.log('HomeTabSearchBar.handleInput - query:', query);
+        
+        // 如果还没有建议器，创建默认的
+        if (!this.fileSuggester) {
+            this.createDefaultSuggester();
+        }
+    }
+
+    private createDefaultSuggester(): void {
+        if (this.plugin.settings.omnisearch && this.plugin.app.plugins.getPlugin('omnisearch')) {
+            this.fileSuggester = new OmnisearchSuggester(this.app, this.plugin, this.view, this);
+        } else {
+            this.fileSuggester = new HomeTabFileSuggester(this.app, this.plugin, this.view, this);
+        }
     }
 
     public focusSearchbar(): void {
@@ -60,19 +91,52 @@ export default class HomeTabSearchBar{
     }
 
     public load(): void {
-        if (this.plugin.settings.omnisearch && this.plugin.app.plugins.getPlugin('omnisearch')) {
-            this.fileSuggester = new OmnisearchSuggester(this.plugin.app, this.plugin, this.view, this);
+        const query = get(this.searchBarEl)?.value?.trim() || '';
+        console.log('HomeTabSearchBar.load - query:', query);
+        
+        // 确保先销毁之前的建议器
+        if (this.fileSuggester) {
+            this.fileSuggester.destroy();
         }
-        else {
-            this.fileSuggester = new HomeTabFileSuggester(this.plugin.app, this.plugin, this.view, this);
-        }
+        
+        // 创建新的建议器
+        this.createSuggester(query);
 
         this.onLoad ? this.onLoad() : null;
     }
 
+    private createSuggester(query: string): void {
+        // 如果是 URL，使用 WebViewerSuggester
+        if (query && isValidUrl(query)) {
+            console.log('HomeTabSearchBar - Creating WebViewerSuggester for URL:', query);
+            this.fileSuggester = new WebViewerSuggester(this.plugin.app, this.plugin, this.view, this);
+            this.fileSuggester.setInput(query);
+            return;
+        }
+
+        // 否则使用其他建议器
+        if (this.plugin.settings.omnisearch && this.plugin.app.plugins.getPlugin('omnisearch')) {
+            this.fileSuggester = new OmnisearchSuggester(this.plugin.app, this.plugin, this.view, this);
+        } else {
+            this.fileSuggester = new HomeTabFileSuggester(this.plugin.app, this.plugin, this.view, this);
+        }
+    }
+
     public updateActiveSuggester(filterKey: FilterKey){
+        console.log('HomeTabSearchBar.updateActiveSuggester - filterKey:', filterKey);
+        
         this.fileSuggester.destroy()
         const filterEl = get(this.activeExtEl)
+        const query = get(this.searchBarEl)?.value?.trim() || '';
+        console.log('HomeTabSearchBar.updateActiveSuggester - query:', query);
+
+        // 如果是 URL，始终使用 WebViewerSuggester
+        if (query && isValidUrl(query)) {
+            console.log('HomeTabSearchBar.updateActiveSuggester - URL detected');
+            filterEl.toggleClass('hide', true);
+            this.createSuggester(query);
+            return;
+        }
 
         let filter: SearchBarFilterType = 'default'
 

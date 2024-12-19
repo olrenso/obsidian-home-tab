@@ -2,6 +2,7 @@
 	import { Platform } from "obsidian";
 	import { filterKeys, type FilterKey, type SearchBarFilterType } from "src/homeTabSearchbar";
     import type HomeTabSearchBar from "src/homeTabSearchbar";
+    import { onMount } from 'svelte';
     
     export let HomeTabSearchBar: HomeTabSearchBar
     export let embedded: boolean = false
@@ -12,6 +13,13 @@
     const isPhone = Platform.isPhone
 
     let inputValue = ''
+    let inputEl: HTMLInputElement;
+
+    onMount(() => {
+        if (inputEl) {
+            HomeTabSearchBar.setSearchBarEl(inputEl);
+        }
+    });
 
     function handleKeydown(e: KeyboardEvent): void{
         // If the input field is empty and a filter is active remove it
@@ -42,7 +50,7 @@
         class:embedded={embedded}
         style:width={embedded || isPhone ? "90%" : "50%"}>
         <div class='nav-file-tag home-tab-suggestion-file-tag hide' bind:this={$activeExtEl}></div>
-        <input type="search" spellcheck="false" placeholder="Type to start search..." bind:value={inputValue} bind:this={$searchBarEl}
+        <input type="search" spellcheck="false" placeholder="Type to start search..." bind:value={inputValue} bind:this={inputEl}
         on:keydown={(e) => handleKeydown(e)}>
     </div>
 </div>
@@ -88,27 +96,3 @@
         display: none;
     }
 </style>
-
-<!--     .home-tab-searchbar{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: calc(var(--input-height)*1.25);
-    }
-
-    .home-tab-searchbar input{
-        width: 50%;
-        min-width: 250px;
-        max-width: 700px;
-        display: inline-block;
-        margin: 0 auto;
-        height: 100%;
-        box-shadow: none;
-        padding: 6px 18px;
-        font-size: var(--font-ui-medium);
-    }
-
-    .home-tab-searchbar input:focus, .home-tab-searchbar input:active{
-        border-color: var(--background-modifier-border);
-    }
- -->
