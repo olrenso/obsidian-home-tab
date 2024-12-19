@@ -158,20 +158,15 @@ export abstract class TextInputSuggester<T> implements ISuggester{
 
     async onInput(): Promise<void>{
         const input = this.inputEl.value
-        console.log('TextInputSuggester.onInput - input:', input);
-        
         const suggestions = await this.getSuggestions(input)
-        console.log('TextInputSuggester.onInput - suggestions:', suggestions);
         
         // 清除之前的建议
         this.suggester.setSuggestions([])
         
         if(suggestions && suggestions.length > 0){
-            console.log('TextInputSuggester.onInput - Setting suggestions');
             this.suggester.setSuggestions(suggestions)
             this.open()
         } else {
-            console.log('TextInputSuggester.onInput - No suggestions');
             this.onNoSuggestion()
             this.close()
         }

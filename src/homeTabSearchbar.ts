@@ -68,8 +68,6 @@ export default class HomeTabSearchBar{
     }
 
     private handleInput(query: string): void {
-        console.log('HomeTabSearchBar.handleInput - query:', query);
-        
         // 如果还没有建议器，创建默认的
         if (!this.fileSuggester) {
             this.createDefaultSuggester();
@@ -92,7 +90,6 @@ export default class HomeTabSearchBar{
 
     public load(): void {
         const query = get(this.searchBarEl)?.value?.trim() || '';
-        console.log('HomeTabSearchBar.load - query:', query);
         
         // 确保先销毁之前的建议器
         if (this.fileSuggester) {
@@ -108,7 +105,6 @@ export default class HomeTabSearchBar{
     private createSuggester(query: string): void {
         // 如果是 URL，使用 WebViewerSuggester
         if (query && isValidUrl(query)) {
-            console.log('HomeTabSearchBar - Creating WebViewerSuggester for URL:', query);
             this.fileSuggester = new WebViewerSuggester(this.plugin.app, this.plugin, this.view, this);
             this.fileSuggester.setInput(query);
             return;
@@ -123,16 +119,12 @@ export default class HomeTabSearchBar{
     }
 
     public updateActiveSuggester(filterKey: FilterKey){
-        console.log('HomeTabSearchBar.updateActiveSuggester - filterKey:', filterKey);
-        
         this.fileSuggester.destroy()
         const filterEl = get(this.activeExtEl)
         const query = get(this.searchBarEl)?.value?.trim() || '';
-        console.log('HomeTabSearchBar.updateActiveSuggester - query:', query);
 
         // 如果是 URL，始终使用 WebViewerSuggester
         if (query && isValidUrl(query)) {
-            console.log('HomeTabSearchBar.updateActiveSuggester - URL detected');
             filterEl.toggleClass('hide', true);
             this.createSuggester(query);
             return;

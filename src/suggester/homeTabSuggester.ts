@@ -144,7 +144,6 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
         // 如果是普通输入，保持原有的文件创建建议
         if(!this.activeFilter || this.activeFilter === 'markdown' || this.activeFilter === 'md'){
             if (!!input) {
-                console.log('HomeTabFileSuggester.onNoSuggestion - Creating file suggestion for:', input);
                 this.suggester.setSuggestions([{
                     item: {
                         name: `${input}.md`,
@@ -170,11 +169,9 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
     
     getSuggestions(inputStr: string): Fuse.FuseResult<SearchFile>[] {
         const query = inputStr.trim();
-        console.log('HomeTabFileSuggester.getSuggestions - query:', query);
 
         // 先尝试搜索文件
         if(!query) return []
-        console.log('HomeTabFileSuggester.getSuggestions - Searching files for:', query);
         const results = this.fuzzySearch.rawSearch(query, this.plugin.settings.maxResults);
 
         // 如果找到了文件建议，直接返回
@@ -185,7 +182,6 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
         // 如果没有找到文件建议，检查是否是 URL
         if (isValidUrl(query)) {
             const url = query.startsWith('http') ? query : `https://${query}`;
-            console.log('HomeTabFileSuggester.getSuggestions - No files found, creating URL suggestion for:', url);
             return [{
                 item: {
                     name: url,
