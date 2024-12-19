@@ -7,6 +7,7 @@ import SurfingSuggester from "./suggester/surfingSuggester";
 import WebViewerSuggester from "./suggester/webViewerSuggester";
 import { fileTypes, type FileExtension, type FileType, fileExtensions } from "./utils/getFileTypeUtils";
 import { isValidUrl } from "./utils/urlUtils";
+import { debounce } from "./utils/debounce";
 
 export type SearchBarFilterType = 'fileExtension' | 'fileType' | 'webSearch' | 'omnisearch' | 'default'
 
@@ -72,6 +73,31 @@ export default class HomeTabSearchBar{
         if (!this.fileSuggester) {
             this.createDefaultSuggester();
         }
+        
+        // 如果是 URL，切换到 WebViewerSuggester
+        if (query && isValidUrl(query)) {
+            if (!(this.fileSuggester instanceof WebViewerSuggester)) {
+                // 确保先关闭旧的建议器
+                this.fileSuggester.close();
+                this.fileSuggester.destroy();
+                this.fileSuggester = new WebViewerSuggester(this.plugin.app, this.plugin, this.view, this);
+            }
+            // 更新建议
+            this.fileSuggester.onInput();
+        }
+        // 如果不是 URL 但当前是 WebViewerSuggester，切换回默认建议器
+        else if (this.fileSuggester instanceof WebViewerSuggester) {
+            // 确保先关闭旧的建议器
+            this.fileSuggester.close();
+            this.fileSuggester.destroy();
+            this.createDefaultSuggester();
+            // 更新建议
+            this.fileSuggester.onInput();
+        }
+        // 如果建议器类型没变，直接调用 onInput
+        else {
+            this.fileSuggester.onInput();
+        }
     }
 
     private createDefaultSuggester(): void {
@@ -106,7 +132,7 @@ export default class HomeTabSearchBar{
         // 如果是 URL，使用 WebViewerSuggester
         if (query && isValidUrl(query)) {
             this.fileSuggester = new WebViewerSuggester(this.plugin.app, this.plugin, this.view, this);
-            this.fileSuggester.setInput(query);
+            this.fileSuggester.onInput();
             return;
         }
 
@@ -152,13 +178,13 @@ export default class HomeTabSearchBar{
                 else {
                     this.fileSuggester = new HomeTabFileSuggester(this.plugin.app, this.plugin, this.view, this);
                 }
-                this.fileSuggester.setInput('')
+                this.fileSuggester.onInput();
                 break;
             case 'omnisearch':
                 if(this.app.plugins.getPlugin('omnisearch')){
                     filterEl.toggleClass('hide', false)
                     this.fileSuggester = new OmnisearchSuggester(this.plugin.app, this.plugin, this.view, this)
-                    this.fileSuggester.setInput('')
+                    this.fileSuggester.onInput();
                 }
                 else{
                     new Notice('Omnisearch plugins is not enabled.')
@@ -169,7 +195,7 @@ export default class HomeTabSearchBar{
                 if(this.app.plugins.getPlugin('surfing')){
                     filterEl.toggleClass('hide', false)
                     this.fileSuggester = new SurfingSuggester(this.plugin.app, this.plugin, this.view, this)
-                    this.fileSuggester.setInput('')
+                    this.fileSuggester.onInput();
                 }
                 else{
                     new Notice('Surfing plugin is not enabled.')
@@ -182,7 +208,7 @@ export default class HomeTabSearchBar{
                 this.fileSuggester.setFileFilter(filterKey as FileType | FileExtension)
                 filterEl.toggleClass('hide', false)
                 filterEl.setText(filterKey)
-                this.fileSuggester.setInput('')
+                this.fileSuggester.onInput();
                 break;
             default:
                 break;

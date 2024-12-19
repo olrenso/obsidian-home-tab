@@ -240,9 +240,11 @@ export abstract class TextInputSuggester<T> implements ISuggester{
         return this.suggester
     }
 
-    setInput(input: string): void{
-        this.inputEl.value = input
-        this.inputEl.dispatchEvent(new Event("input")) // Trigger input
+    setInput(input: string, triggerEvent = true): void {
+        this.inputEl.value = input;
+        if (triggerEvent) {
+            this.inputEl.dispatchEvent(new Event("input")); // Trigger input
+        }
     }
 
     abstract getSuggestions(input: string): T[] | Promise<T[]>

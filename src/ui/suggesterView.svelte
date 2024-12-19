@@ -24,8 +24,6 @@
     suggester.selectedItemIndexStore.subscribe((value) => selectedItemIndex = value)
     
     const suggestionWrapper = suggester.suggestionsContainer
-
-    $: console.log('suggesterView - current suggestions:', suggestions);
 </script>
 
 {#if suggestions?.length > 0}

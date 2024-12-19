@@ -172,33 +172,7 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
 
         // 先尝试搜索文件
         if(!query) return []
-        const results = this.fuzzySearch.rawSearch(query, this.plugin.settings.maxResults);
-
-        // 如果找到了文件建议，直接返回
-        if (results.length > 0) {
-            return results;
-        }
-
-        // 如果没有找到文件建议，检查是否是 URL
-        if (isValidUrl(query)) {
-            const url = query.startsWith('http') ? query : `https://${query}`;
-            return [{
-                item: {
-                    name: url,
-                    path: url,
-                    basename: url,
-                    isCreated: true,
-                    isWebUrl: true,
-                    url: url,
-                    fileType: 'webviewer'
-                },
-                refIndex: 0,
-                score: 0,
-            }];
-        }
-
-        // 如果既不是文件也不是 URL，返回空数组
-        return [];
+        return this.fuzzySearch.rawSearch(query, this.plugin.settings.maxResults);
     }
 
     useSelectedItem(selectedItem: Fuse.FuseResult<SearchFile>, newTab?: boolean): void {

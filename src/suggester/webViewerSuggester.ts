@@ -51,29 +51,39 @@ export default class WebViewerSuggester extends TextInputSuggester<WebViewerItem
             return [];
         }
 
+        // 如果输入包含 http:// 或 https://，直接返回
+        if (trimmedInput.startsWith('http://') || trimmedInput.startsWith('https://')) {
+            return [{
+                url: trimmedInput
+            }];
+        }
+
+        // 如果输入包含常见的域名格式，添加 https:// 前缀
         if (isValidUrl(trimmedInput)) {
             return [{
-                url: trimmedInput.startsWith('http') ? trimmedInput : `https://${trimmedInput}`
+                url: `https://${trimmedInput}`
             }];
         }
 
         return [];
     }
 
-    async useSelectedItem(item: WebViewerItem, newTab = false): Promise<void> {
+    useSelectedItem(item: WebViewerItem, newTab?: boolean): void {
         if (!item) return;
-
-        const leaf = newTab 
-            ? this.app.workspace.getLeaf('tab') 
-            : this.app.workspace.getLeaf();
-
-        await leaf.setViewState({
-            type: "webviewer",
-            active: true,
-            state: {
-                url: ensureHttps(item.url)
+        
+        // 使用 surfing 插件打开 URL
+        if (this.plugin.app.plugins.getPlugin('surfing')) {
+            if (newTab) {
+                this.plugin.app.workspace.openLinkText(item.url, '', true);
+            } else {
+                this.plugin.app.workspace.openLinkText(item.url, '');
             }
-        });
+        } else {
+            window.open(item.url);
+        }
+        
+        // 关闭建议
+        this.close();
     }
 
     getDisplayElementComponentType() {

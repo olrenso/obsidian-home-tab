@@ -8,16 +8,16 @@
     export let selectedItemIndex: number;
     export let textInputSuggester: TextInputSuggester<any>;
     
-    // 格式化显示的 URL
+    // Format the displayed URL
     function formatUrl(url: string): string {
-        // 移除协议前缀
+        // Remove protocol prefix
         return url.replace(/^https?:\/\//, '');
     }
 </script>
 
 <Suggestion {index} {textInputSuggester} {selectedItemIndex}>
     <svelte:fragment slot="suggestion-title">
-        <span>打开链接：{formatUrl(url)}</span>
+        <span>Open link: {formatUrl(url)}</span>
     </svelte:fragment>
     <svelte:fragment slot="suggestion-aux">
         <div class="home-tab-suggestion-filepath">
