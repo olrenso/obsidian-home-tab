@@ -68,22 +68,20 @@ export default class WebViewerSuggester extends TextInputSuggester<WebViewerItem
         return [];
     }
 
-    useSelectedItem(item: WebViewerItem, newTab?: boolean): void {
+    async useSelectedItem(item: WebViewerItem, newTab = false): Promise<void> {
         if (!item) return;
         
-        // 使用 surfing 插件打开 URL
-        if (this.plugin.app.plugins.getPlugin('surfing')) {
-            if (newTab) {
-                this.plugin.app.workspace.openLinkText(item.url, '', true);
-            } else {
-                this.plugin.app.workspace.openLinkText(item.url, '');
+        const leaf = newTab 
+            ? this.app.workspace.getLeaf('tab') 
+            : this.app.workspace.getLeaf();
+
+        await leaf.setViewState({
+            type: "webviewer",
+            active: true,
+            state: {
+                url: ensureHttps(item.url)
             }
-        } else {
-            window.open(item.url);
-        }
-        
-        // 关闭建议
-        this.close();
+        });
     }
 
     getDisplayElementComponentType() {
