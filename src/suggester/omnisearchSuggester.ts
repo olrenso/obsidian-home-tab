@@ -99,14 +99,23 @@ export default class OmnisearchSuggester extends TextInputSuggester<ResultNoteAp
     }
 
     
-    getDisplayElementProps(suggestion: ResultNoteApi): {basename: string, excerpt: string}{
-        const escapedWords = suggestion.foundWords.map(word => escapeStringForRegExp(word))
-        const regex = concatenateStringsToRegex(escapedWords, 'gi')
-        
-        let content = this.plugin.settings.showOmnisearchExcerpt ? this.highlightMatches(suggestion.excerpt, regex) : ''
-        let basename = this.highlightMatches(suggestion.basename, regex)
-        
-        return {basename: basename, excerpt: content}
+    getDisplayElementProps(suggestion: ResultNoteApi): {nameToDisplay: string, filePath?: string, excerpt?: string}{
+        const nameToDisplay = suggestion.basename
+        let filePath: string | undefined = undefined
+        let excerpt: string | undefined = undefined
+        if(this.plugin.settings.showPath){
+            filePath = suggestion.path
+        }
+        if(this.plugin.settings.showOmnisearchExcerpt){
+            const escapedWords = suggestion.foundWords.map(word => escapeStringForRegExp(word))
+            const regex = concatenateStringsToRegex(escapedWords, 'gi')
+            excerpt = this.highlightMatches(suggestion.excerpt, regex)
+        }
+        return {
+            nameToDisplay: nameToDisplay,
+            filePath: filePath,
+            excerpt: excerpt
+        }
     }
 
     getDisplayElementComponentType(): typeof OmnisearchSuggestion{
@@ -123,6 +132,6 @@ export default class OmnisearchSuggester extends TextInputSuggester<ResultNoteAp
     }
 
     private highlightMatches(content: string, regexMatches: RegExp): string{
-        return content.replaceAll(regexMatches, (value) => `<span class="suggestion-highlight omnisearch-highlight omnisearch-default-highlight">${value}</span>`)
+        return content.replace(regexMatches, (match: string) => `<span class="suggestion-highlight omnisearch-highlight omnisearch-default-highlight">${match}</span>`)
     }
 }

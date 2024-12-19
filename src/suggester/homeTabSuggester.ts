@@ -1,5 +1,5 @@
-import type Fuse from 'fuse.js'
 import { normalizePath, Platform, TAbstractFile, TFile, View, type App } from 'obsidian'
+import type Fuse from 'fuse.js'
 import { DEFAULT_FUSE_OPTIONS, FileFuzzySearch, type SearchFile } from './fuzzySearch'
 import type HomeTab from '../main'
 import type HomeTabSearchBar from "src/homeTabSearchbar"
@@ -9,6 +9,7 @@ import { generateHotkeySuggestion } from 'src/utils/htmlUtils'
 import { isValidExtension, type FileExtension, type FileType } from 'src/utils/getFileTypeUtils'
 import { get } from 'svelte/store'
 import HomeTabFileSuggestion from 'src/ui/svelteComponents/homeTabFileSuggestion.svelte'
+import { isValidUrl } from 'src/utils/urlUtils'
 
 declare module 'obsidian'{
     interface MetadataCache{
@@ -45,7 +46,17 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
 
         this.app.metadataCache.onCleanCache(() => {
             this.plugin.settings.markdownOnly ? this.files = this.filterSearchFileArray('markdown', getSearchFiles(this.plugin.settings.unresolvedLinks)) : this.files = getSearchFiles(this.plugin.settings.unresolvedLinks)
-            this.fuzzySearch = new FileFuzzySearch(this.files, { ...DEFAULT_FUSE_OPTIONS, ignoreLocation: true, fieldNormWeight: 1.65, keys: [{name: 'basename', weight: 1.5}, {name: 'aliases', weight: 0.1}] })
+            this.fuzzySearch = new FileFuzzySearch(this.files, { 
+                ...DEFAULT_FUSE_OPTIONS, 
+                ignoreLocation: true, 
+                fieldNormWeight: 1.65, 
+                keys: [
+                    {name: 'basename', weight: 1.5}, 
+                    {name: 'aliases', weight: 0.1},
+                    ...(this.plugin.settings.searchTitle ? [{name: 'title', weight: 1.2}] : []),
+                    ...(this.plugin.settings.searchHeadings ? [{name: 'headings', weight: 1.0}] : [])
+                ] 
+            })
         })
 
         // Open file in new tab
@@ -128,56 +139,116 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
     }
 
     onNoSuggestion(): void {
+        const input = this.inputEl.value.trim();
+        
+        // 如果是普通输入，保持原有的文件创建建议
         if(!this.activeFilter || this.activeFilter === 'markdown' || this.activeFilter === 'md'){
-            const input = this.inputEl.value
             if (!!input) {
                 this.suggester.setSuggestions([{
-                        item: {
-                            name: `${input}.md`,
-                            path: `${input}.md`,
-                            basename: input,
-                            isCreated: false,
-                            fileType: 'markdown',
-                            extension: 'md',
-                        },
-                        refIndex: 0,
-                        score: 0,
-                }])
-                this.open()
+                    item: {
+                        name: `${input}.md`,
+                        path: `${input}.md`,
+                        basename: input,
+                        isCreated: false,
+                        fileType: 'markdown',
+                        extension: 'md',
+                    },
+                    refIndex: 0,
+                    score: 0,
+                }]);
+                this.open();
             }
             else{
-                this.close()
+                this.close();
             }
         }
         else{
-            this.close()
+            this.close();
         }
     }
     
-    getSuggestions(input: string): Fuse.FuseResult<SearchFile>[] {
-        return this.fuzzySearch.rawSearch(input, this.plugin.settings.maxResults)
+    getSuggestions(inputStr: string): Fuse.FuseResult<SearchFile>[] {
+        const query = inputStr.trim();
+
+        // 先尝试搜索文件
+        if(!query) return []
+        return this.fuzzySearch.rawSearch(query, this.plugin.settings.maxResults);
     }
 
     useSelectedItem(selectedItem: Fuse.FuseResult<SearchFile>, newTab?: boolean): void {
+        // 处理 WebViewer URL
+        if (selectedItem.item.isWebUrl) {
+            const leaf = newTab 
+                ? this.app.workspace.getLeaf('tab') 
+                : this.app.workspace.getLeaf();
+
+            leaf.setViewState({
+                type: "webviewer",
+                active: true,
+                state: {
+                    url: selectedItem.item.url
+                }
+            });
+            return;
+        }
+
+        // 处理普通文件
         if(selectedItem.item.isCreated && selectedItem.item.file){
-            this.openFile(selectedItem.item.file, newTab)
+            this.openFile(selectedItem.item.file, newTab);
         }
         else{
-            this.handleFileCreation(selectedItem.item, newTab)
+            this.handleFileCreation(selectedItem.item, newTab);
         }
     }
 
-    getDisplayElementProps(suggestion: Fuse.FuseResult<SearchFile>): {nameToDisplay: string, filePath?: string}{
-        const nameToDisplay = this.fuzzySearch.getBestMatch(suggestion, this.inputEl.value)
-        let filePath: string | undefined = undefined
-        if(this.plugin.settings.showPath){
-            filePath = suggestion.item.file ? suggestion.item.file.parent.name : getParentFolderFromPath(suggestion.item.path) // Parent folder
+    getDisplayElementProps(suggestion: Fuse.FuseResult<SearchFile>): {nameToDisplay: string, filePath?: string, matchedHeading?: string}{
+        if (!this.inputEl || !(this.inputEl instanceof HTMLInputElement)) {
+            return {
+                nameToDisplay: suggestion.item.basename,
+                filePath: undefined
+            };
         }
+
+        // 如果是 WebViewer URL
+        if (suggestion.item.isWebUrl) {
+            return {
+                nameToDisplay: 'Open link: ' + suggestion.item.url,
+                filePath: 'WebViewer'
+            };
+        }
+
+        // 处理普通文件
+        let nameToDisplay = suggestion.item.basename;
+        let filePath: string | undefined = undefined;
+        let matchedHeading: string | undefined = undefined;
+
+        if(this.plugin.settings.showPath){
+            filePath = suggestion.item.file && suggestion.item.file.parent 
+                ? suggestion.item.file.parent.name 
+                : getParentFolderFromPath(suggestion.item.path);
+        }
+
+        // Check if the match is from a heading
+        if (this.plugin.settings.searchHeadings && suggestion.matches) {
+            const headingMatch = suggestion.matches.find(match => match.key === 'headings');
+            if (headingMatch && typeof headingMatch.value === 'string') {
+                matchedHeading = headingMatch.value;
+                nameToDisplay = suggestion.item.basename;
+                return {
+                    nameToDisplay: nameToDisplay,
+                    filePath: filePath,
+                    matchedHeading: matchedHeading
+                };
+            }
+        }
+
+        nameToDisplay = this.fuzzySearch.getBestMatch(suggestion, this.inputEl.value);
         
         return {
             nameToDisplay: nameToDisplay,
-            filePath: filePath
-        }
+            filePath: filePath,
+            matchedHeading: matchedHeading
+        };
     }
 
     getDisplayElementComponentType(): typeof HomeTabFileSuggestion{

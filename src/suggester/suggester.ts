@@ -122,6 +122,7 @@ export abstract class TextInputSuggester<T> implements ISuggester{
     protected closingAnimationRunning: boolean
 
     private inputListener: (this: HTMLInputElement, ev: Event) => any
+    private lastValue: string
 
     constructor(app: App, inputEl: HTMLInputElement, suggestionParentContainer: HTMLElement, viewOptions?: suggesterViewOptions, searchDelay?: number){
         this.app = app
@@ -130,27 +131,44 @@ export abstract class TextInputSuggester<T> implements ISuggester{
         
         this.suggester = new Suggester(this, this.scope)
         
-        this.inputListener = searchDelay ? debounce(async () => await this.onInput(), searchDelay , false) : this.onInput.bind(this)
-        this.inputEl.addEventListener('input', this.inputListener)
-        this.inputEl.addEventListener('focus', this.inputListener)
-        this.inputEl.addEventListener('blur', this.close.bind(this))
+        // 使用较长的延迟时间，并确保只在值变化时触发
+        const delay = searchDelay || 200;
+        this.inputListener = debounce(
+            async (e: Event) => {
+                const target = e.target as HTMLInputElement;
+                if (target.value !== this.lastValue) {
+                    this.lastValue = target.value;
+                    await this.onInput();
+                }
+            },
+            delay,
+            true
+        );
         
-        this.scope.register([], 'escape', this.close.bind(this))
+        this.inputEl.addEventListener('input', this.inputListener);
+        // 移除 focus 事件监听，避免重复触发
+        this.inputEl.addEventListener('blur', this.close.bind(this));
         
-        this.viewOptions = viewOptions ?? {}
-        this.suggestionParentContainer = suggestionParentContainer
-        this.closingAnimationRunning = false
+        this.scope.register([], 'escape', this.close.bind(this));
+        
+        this.viewOptions = viewOptions ?? {};
+        this.suggestionParentContainer = suggestionParentContainer;
+        this.closingAnimationRunning = false;
     }
 
     async onInput(): Promise<void>{
         const input = this.inputEl.value
         const suggestions = await this.getSuggestions(input)
-        if(suggestions.length > 0){
+        
+        // 清除之前的建议
+        this.suggester.setSuggestions([])
+        
+        if(suggestions && suggestions.length > 0){
             this.suggester.setSuggestions(suggestions)
             this.open()
-        }
-        else if(suggestions.length === 0){
+        } else {
             this.onNoSuggestion()
+            this.close()
         }
     }
 
@@ -222,9 +240,11 @@ export abstract class TextInputSuggester<T> implements ISuggester{
         return this.suggester
     }
 
-    setInput(input: string): void{
-        this.inputEl.value = input
-        this.inputEl.dispatchEvent(new Event("input")) // Trigger input
+    setInput(input: string, triggerEvent = true): void {
+        this.inputEl.value = input;
+        if (triggerEvent) {
+            this.inputEl.dispatchEvent(new Event("input")); // Trigger input
+        }
     }
 
     abstract getSuggestions(input: string): T[] | Promise<T[]>

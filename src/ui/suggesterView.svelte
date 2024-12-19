@@ -8,23 +8,31 @@
 
     let suggester: Suggester<any> = textInputSuggester.getSuggester()
 
-    let suggestions: any[]
-    suggester.suggestionsStore.subscribe((value) => suggestions = value)
+    let suggestions: any[] = []
+    let previousLength = 0
+
+    // 只在建议数量变化时更新
+    suggester.suggestionsStore.subscribe((value) => {
+        const newSuggestions = value || [];
+        if (newSuggestions.length !== previousLength) {
+            previousLength = newSuggestions.length;
+            suggestions = newSuggestions;
+        }
+    })
     
     let selectedItemIndex: number
     suggester.selectedItemIndexStore.subscribe((value) => selectedItemIndex = value)
     
     const suggestionWrapper = suggester.suggestionsContainer
-
 </script>
 
-{#if suggestions && suggestions.length > 0}
+{#if suggestions?.length > 0}
     <div class="{options.containerClass ?? 'suggestion-container popover suggestion-popover'}" 
         on:mousedown="{(e) => e.preventDefault()}"
         transition:slide={{duration:200, easing: quintOut}}>
         <div class="{options.suggestionClass ?? 'suggestion'} {options.additionalClasses ?? ''}" class:scrollable="{options.isScrollable}"
             style="{options.style ?? ''}" bind:this={$suggestionWrapper}>
-            {#each suggestions as suggestion, index (suggestion)}
+            {#each suggestions as suggestion, index (index)}
                 <svelte:component this={textInputSuggester.getDisplayElementComponentType()}
                                 {index} {suggestion} {textInputSuggester} {selectedItemIndex}
                                 {... textInputSuggester.getDisplayElementProps(suggestion)}/>
@@ -37,7 +45,6 @@
         {/if}
     </div>
 {/if}
-    
 
 <style>
     .scrollable{

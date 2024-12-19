@@ -1,5 +1,10 @@
 import type { TFile } from "obsidian"
+import { App } from 'obsidian'
 import { getUnresolvedLinkBasename, getUnresolvedLinkPath } from "./getFilesUtils"
+
+declare global {
+    var app: App;
+}
 
 const fileTypeLookupTable: FileTypeLookupTable = {
     image : ['jpg', 'jpeg', 'png', 'svg', 'gif', 'bmp'],
@@ -8,10 +13,11 @@ const fileTypeLookupTable: FileTypeLookupTable = {
     markdown : ['md'],
     pdf : ['pdf'],
     canvas: ['canvas'],
+    webviewer: []
 }
 
 type FileTypeLookupTable = {[key in FileType]: string[]}
-export const fileTypes = ['image', 'video', 'audio', 'markdown', 'pdf', 'canvas'] as const
+export const fileTypes = ['markdown', 'image', 'video', 'audio', 'pdf', 'canvas', 'webviewer'] as const
 export type FileType = typeof fileTypes[number]
 // export type FileType = 'image' | 'video' | 'audio' | 'markdown' | 'pdf'
 export const fileExtensions = ['jpg', 'jpeg', 'png', 'svg', 'gif', 'bmp', 'mp4', 'webm', 'ogv', 'mov', 'mkv', 
@@ -83,6 +89,20 @@ export function isUnresolved(unresolvedFile: unresolvedFile): boolean{
     return false
 }
 
+export function isUnresolvedLink(filename: string): boolean{
+    const parentFiles = Object.entries(app.metadataCache.unresolvedLinks)
+    let isUnresolved = false
+
+    parentFiles.forEach(([_, links]) => {
+        const unresolvedLinks = Object.keys(links)
+        if(unresolvedLinks.includes(filename)){
+            isUnresolved = true
+        }
+    })
+
+    return isUnresolved
+}
+
 export function isMarkdown(file: TFile): boolean{
     if(getFileTypeFromExtension(file.extension) === 'markdown'){
         return true
@@ -96,6 +116,6 @@ export function isValidExtension(extToCheck: string): boolean{
 }
 
 export function isValidFileType(typeToCheck: string): boolean{
-    const fileTypes = ['image','video','audio','markdown','pdf']
+    const fileTypes = ['image','video','audio','markdown','pdf', 'webviewer']
     return fileTypes.includes(typeToCheck)
 }

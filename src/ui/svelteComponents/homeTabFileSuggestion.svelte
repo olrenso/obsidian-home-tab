@@ -1,6 +1,6 @@
 <script lang="ts">
     import type Fuse from 'fuse.js'
-	import { FilePlus, FileQuestion, Forward, Folder } from "lucide-svelte";
+	import { FilePlus, FileQuestion, Forward, Folder, Hash, Globe } from "lucide-svelte";
     import type { SearchFile } from "src/suggester/fuzzySearch";
 	import type { TextInputSuggester } from "src/suggester/suggester";
 	import Suggestion from './suggestion.svelte';
@@ -12,6 +12,7 @@
 
     export let nameToDisplay: string
     export let filePath: string | undefined = undefined
+    export let matchedHeading: string | undefined = undefined
 
     let suggestionItem = suggestion.item
 </script>
@@ -21,7 +22,7 @@
     <!-- File name (or alias) -->
     <svelte:fragment slot="suggestion-title">
         <span>{nameToDisplay}</span>
-        {#if suggestionItem.fileType != 'markdown'}
+        {#if suggestionItem.fileType != 'markdown' && !suggestionItem.isWebUrl}
             <div class="nav-file-tag home-tab-suggestion-file-tag">
                 {suggestionItem.extension}
             </div>
@@ -35,6 +36,13 @@
                 <div class="home-tab-suggestion-description">
                     <Forward size={15} aria-label={'Alias of'}/>
                     <span>{suggestionItem.basename}</span>
+                </div>
+            {/if}
+            <!-- If the match is from a heading -->
+            {#if matchedHeading}
+                <div class="home-tab-suggestion-description">
+                    <Hash size={15} aria-label={'Heading'}/>
+                    <span>{matchedHeading}</span>
                 </div>
             {/if}
         {/if}
@@ -52,9 +60,12 @@
                     </div>
                 {/if}
             </div>
-        {/if}
-        <!-- Add file path -->
-        {#if (suggestionItem.isCreated || suggestionItem.isUnresolved) && filePath}
+        {:else if suggestionItem.isWebUrl}
+            <div class="home-tab-suggestion-filepath">
+                <Globe size={15} aria-label={'WebViewer'}/>
+                <span>WebViewer</span>
+            </div>
+        {:else if (suggestionItem.isCreated || suggestionItem.isUnresolved) && filePath}
             <div class="home-tab-suggestion-filepath" aria-label="File path">
                 <Folder size={15}/>
                 <span class="home-tab-file-path">{filePath}</span>
