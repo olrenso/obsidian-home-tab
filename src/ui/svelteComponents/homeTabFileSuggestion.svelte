@@ -1,6 +1,6 @@
 <script lang="ts">
     import type Fuse from 'fuse.js'
-	import { FilePlus, FileQuestion, Forward, Folder, Hash } from "lucide-svelte";
+	import { FilePlus, FileQuestion, Forward, Folder, Hash, Globe } from "lucide-svelte";
     import type { SearchFile } from "src/suggester/fuzzySearch";
 	import type { TextInputSuggester } from "src/suggester/suggester";
 	import Suggestion from './suggestion.svelte';
@@ -22,7 +22,7 @@
     <!-- File name (or alias) -->
     <svelte:fragment slot="suggestion-title">
         <span>{nameToDisplay}</span>
-        {#if suggestionItem.fileType != 'markdown'}
+        {#if suggestionItem.fileType != 'markdown' && !suggestionItem.isWebUrl}
             <div class="nav-file-tag home-tab-suggestion-file-tag">
                 {suggestionItem.extension}
             </div>
@@ -60,9 +60,12 @@
                     </div>
                 {/if}
             </div>
-        {/if}
-        <!-- Add file path -->
-        {#if (suggestionItem.isCreated || suggestionItem.isUnresolved) && filePath}
+        {:else if suggestionItem.isWebUrl}
+            <div class="home-tab-suggestion-filepath">
+                <Globe size={15} aria-label={'WebViewer'}/>
+                <span>WebViewer</span>
+            </div>
+        {:else if (suggestionItem.isCreated || suggestionItem.isUnresolved) && filePath}
             <div class="home-tab-suggestion-filepath" aria-label="File path">
                 <Folder size={15}/>
                 <span class="home-tab-file-path">{filePath}</span>

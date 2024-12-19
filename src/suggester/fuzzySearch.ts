@@ -33,8 +33,10 @@ export interface SearchFile{
     isCreated: boolean
     isUnresolved?: boolean
     file?: TFile
-    extension: string
+    extension?: string
     fileType?: FileType
+    isWebUrl?: boolean
+    url?: string
 }
 
 class fuzzySearch<T>{

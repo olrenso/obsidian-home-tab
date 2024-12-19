@@ -1,5 +1,5 @@
-import type Fuse from 'fuse.js'
 import { normalizePath, Platform, TAbstractFile, TFile, View, type App } from 'obsidian'
+import type Fuse from 'fuse.js'
 import { DEFAULT_FUSE_OPTIONS, FileFuzzySearch, type SearchFile } from './fuzzySearch'
 import type HomeTab from '../main'
 import type HomeTabSearchBar from "src/homeTabSearchbar"
@@ -9,6 +9,7 @@ import { generateHotkeySuggestion } from 'src/utils/htmlUtils'
 import { isValidExtension, type FileExtension, type FileType } from 'src/utils/getFileTypeUtils'
 import { get } from 'svelte/store'
 import HomeTabFileSuggestion from 'src/ui/svelteComponents/homeTabFileSuggestion.svelte'
+import { isValidUrl } from 'src/utils/urlUtils'
 
 declare module 'obsidian'{
     interface MetadataCache{
@@ -138,42 +139,95 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
     }
 
     onNoSuggestion(): void {
+        const input = this.inputEl.value.trim();
+        
+        // 如果是普通输入，保持原有的文件创建建议
         if(!this.activeFilter || this.activeFilter === 'markdown' || this.activeFilter === 'md'){
-            const input = this.inputEl.value
             if (!!input) {
+                console.log('HomeTabFileSuggester.onNoSuggestion - Creating file suggestion for:', input);
                 this.suggester.setSuggestions([{
-                        item: {
-                            name: `${input}.md`,
-                            path: `${input}.md`,
-                            basename: input,
-                            isCreated: false,
-                            fileType: 'markdown',
-                            extension: 'md',
-                        },
-                        refIndex: 0,
-                        score: 0,
-                }])
-                this.open()
+                    item: {
+                        name: `${input}.md`,
+                        path: `${input}.md`,
+                        basename: input,
+                        isCreated: false,
+                        fileType: 'markdown',
+                        extension: 'md',
+                    },
+                    refIndex: 0,
+                    score: 0,
+                }]);
+                this.open();
             }
             else{
-                this.close()
+                this.close();
             }
         }
         else{
-            this.close()
+            this.close();
         }
     }
     
-    getSuggestions(input: string): Fuse.FuseResult<SearchFile>[] {
-        return this.fuzzySearch.rawSearch(input, this.plugin.settings.maxResults)
+    getSuggestions(inputStr: string): Fuse.FuseResult<SearchFile>[] {
+        const query = inputStr.trim();
+        console.log('HomeTabFileSuggester.getSuggestions - query:', query);
+
+        // 先尝试搜索文件
+        if(!query) return []
+        console.log('HomeTabFileSuggester.getSuggestions - Searching files for:', query);
+        const results = this.fuzzySearch.rawSearch(query, this.plugin.settings.maxResults);
+
+        // 如果找到了文件建议，直接返回
+        if (results.length > 0) {
+            return results;
+        }
+
+        // 如果没有找到文件建议，检查是否是 URL
+        if (isValidUrl(query)) {
+            const url = query.startsWith('http') ? query : `https://${query}`;
+            console.log('HomeTabFileSuggester.getSuggestions - No files found, creating URL suggestion for:', url);
+            return [{
+                item: {
+                    name: url,
+                    path: url,
+                    basename: url,
+                    isCreated: true,
+                    isWebUrl: true,
+                    url: url,
+                    fileType: 'webviewer'
+                },
+                refIndex: 0,
+                score: 0,
+            }];
+        }
+
+        // 如果既不是文件也不是 URL，返回空数组
+        return [];
     }
 
     useSelectedItem(selectedItem: Fuse.FuseResult<SearchFile>, newTab?: boolean): void {
+        // 处理 WebViewer URL
+        if (selectedItem.item.isWebUrl) {
+            const leaf = newTab 
+                ? this.app.workspace.getLeaf('tab') 
+                : this.app.workspace.getLeaf();
+
+            leaf.setViewState({
+                type: "webviewer",
+                active: true,
+                state: {
+                    url: selectedItem.item.url
+                }
+            });
+            return;
+        }
+
+        // 处理普通文件
         if(selectedItem.item.isCreated && selectedItem.item.file){
-            this.openFile(selectedItem.item.file, newTab)
+            this.openFile(selectedItem.item.file, newTab);
         }
         else{
-            this.handleFileCreation(selectedItem.item, newTab)
+            this.handleFileCreation(selectedItem.item, newTab);
         }
     }
 
@@ -182,44 +236,49 @@ export default class HomeTabFileSuggester extends TextInputSuggester<Fuse.FuseRe
             return {
                 nameToDisplay: suggestion.item.basename,
                 filePath: undefined
-            }
+            };
         }
 
-        let nameToDisplay = suggestion.item.basename
-        let filePath: string | undefined = undefined
-        let matchedHeading: string | undefined = undefined
+        // 如果是 WebViewer URL
+        if (suggestion.item.isWebUrl) {
+            return {
+                nameToDisplay: 'Open link: ' + suggestion.item.url,
+                filePath: 'WebViewer'
+            };
+        }
+
+        // 处理普通文件
+        let nameToDisplay = suggestion.item.basename;
+        let filePath: string | undefined = undefined;
+        let matchedHeading: string | undefined = undefined;
 
         if(this.plugin.settings.showPath){
             filePath = suggestion.item.file && suggestion.item.file.parent 
                 ? suggestion.item.file.parent.name 
-                : getParentFolderFromPath(suggestion.item.path)
+                : getParentFolderFromPath(suggestion.item.path);
         }
 
         // Check if the match is from a heading
         if (this.plugin.settings.searchHeadings && suggestion.matches) {
-            // Find the first heading match
-            const headingMatch = suggestion.matches.find(match => match.key === 'headings')
+            const headingMatch = suggestion.matches.find(match => match.key === 'headings');
             if (headingMatch && typeof headingMatch.value === 'string') {
-                matchedHeading = headingMatch.value
-                // Keep the basename as nameToDisplay when it's a heading match
-                nameToDisplay = suggestion.item.basename
-                // If we have a heading match, we skip other matches like aliases
+                matchedHeading = headingMatch.value;
+                nameToDisplay = suggestion.item.basename;
                 return {
                     nameToDisplay: nameToDisplay,
                     filePath: filePath,
                     matchedHeading: matchedHeading
-                }
+                };
             }
         }
 
-        // Only use fuzzy search for non-heading matches
-        nameToDisplay = this.fuzzySearch.getBestMatch(suggestion, this.inputEl.value)
+        nameToDisplay = this.fuzzySearch.getBestMatch(suggestion, this.inputEl.value);
         
         return {
             nameToDisplay: nameToDisplay,
             filePath: filePath,
             matchedHeading: matchedHeading
-        }
+        };
     }
 
     getDisplayElementComponentType(): typeof HomeTabFileSuggestion{

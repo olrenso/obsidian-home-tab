@@ -13,10 +13,11 @@ const fileTypeLookupTable: FileTypeLookupTable = {
     markdown : ['md'],
     pdf : ['pdf'],
     canvas: ['canvas'],
+    webviewer: []
 }
 
 type FileTypeLookupTable = {[key in FileType]: string[]}
-export const fileTypes = ['image', 'video', 'audio', 'markdown', 'pdf', 'canvas'] as const
+export const fileTypes = ['markdown', 'image', 'video', 'audio', 'pdf', 'canvas', 'webviewer'] as const
 export type FileType = typeof fileTypes[number]
 // export type FileType = 'image' | 'video' | 'audio' | 'markdown' | 'pdf'
 export const fileExtensions = ['jpg', 'jpeg', 'png', 'svg', 'gif', 'bmp', 'mp4', 'webm', 'ogv', 'mov', 'mkv', 
@@ -115,6 +116,6 @@ export function isValidExtension(extToCheck: string): boolean{
 }
 
 export function isValidFileType(typeToCheck: string): boolean{
-    const fileTypes = ['image','video','audio','markdown','pdf']
+    const fileTypes = ['image','video','audio','markdown','pdf', 'webviewer']
     return fileTypes.includes(typeToCheck)
 }

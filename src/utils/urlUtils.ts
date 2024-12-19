@@ -1,31 +1,19 @@
-export function isValidUrl(urlString: string): boolean {
-    try {
-        // 移除前后空格
-        urlString = urlString.trim();
-        console.log('isValidUrl - testing URL:', urlString);
-        
-        // 检查基本的 URL 模式，允许更多的 TLD
-        const urlPattern = /^((http|https):\/\/)?([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/[^\s]*)?$/;
-        
-        // 直接测试输入
-        if (urlPattern.test(urlString)) {
-            console.log('isValidUrl - URL pattern matched');
+export function isValidUrl(url: string): boolean {
+    // 如果已经是完整的 URL，直接验证
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        try {
+            new URL(url);
             return true;
+        } catch {
+            return false;
         }
-        
-        // 如果输入不包含协议，添加 https:// 再试一次
-        if (!urlString.startsWith('http')) {
-            const withHttps = 'https://' + urlString;
-            if (urlPattern.test(withHttps)) {
-                console.log('isValidUrl - URL valid with https');
-                return true;
-            }
-        }
-        
-        console.log('isValidUrl - URL invalid');
-        return false;
-    } catch (err) {
-        console.error('isValidUrl - Error:', err);
+    }
+
+    // 如果不是完整的 URL，尝试添加 https:// 前缀再验证
+    try {
+        new URL('https://' + url);
+        return true;
+    } catch {
         return false;
     }
 }
