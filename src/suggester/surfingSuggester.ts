@@ -1,5 +1,5 @@
 import type Fuse from 'fuse.js'
-import { Platform, Plugin_2, View, WorkspaceLeaf, type App } from 'obsidian'
+import { Platform, Plugin, View, WorkspaceLeaf, type App } from 'obsidian'
 import type HomeTab from '../main'
 import type HomeTabSearchBar from "src/homeTabSearchbar"
 import { TextInputSuggester } from './suggester'
@@ -8,7 +8,7 @@ import { get } from 'svelte/store'
 import SurfingSuggestion from 'src/ui/svelteComponents/surfingSuggestion.svelte'
 import { SurfingItemFuzzySearch } from './fuzzySearch'
 
-interface SurfingPlugin extends Plugin_2{
+interface SurfingPlugin extends Plugin{
     settings: SurfingSettings
 }
 interface SurfingSettings{
@@ -17,10 +17,12 @@ interface SurfingSettings{
 interface SurfingView extends View{
     navigate: (url: string, addToHistory?: boolean, updateWebView?: boolean) => void
 }
-interface WebBrowserViewState{
+interface WebBrowserViewState extends Record<string, unknown> {
 	url: string
 	active?: boolean
+    title?: string
 }
+
 interface SurfingJSONstoreObj{
     bookmarks: SurfingBookmark[]
     categories: SurfingCategory[]
@@ -147,14 +149,22 @@ export default class SurfingSuggester extends TextInputSuggester<Fuse.FuseResult
     }
 
     
-    getDisplayElementProps(suggestion: Fuse.FuseResult<SurfingItem>): {info: string}{
-        let info: string = ''
+    getDisplayElementProps(suggestion: Fuse.FuseResult<SurfingItem>): Record<string, unknown>{
+        let info = ''
+        let nameToDisplay = ''
+        let url = ''
 
         if(suggestion.item.type === 'newUrl'){
             info = `Search with ${this.surfingPlugin.settings.defaultSearchEngine}`
+            nameToDisplay = suggestion.item.name || ''
+            url = suggestion.item.url || ''
         }
 
-        return {info: info}
+        return {
+            info,
+            nameToDisplay,
+            url
+        }
     }
 
     getDisplayElementComponentType(): typeof SurfingSuggestion{

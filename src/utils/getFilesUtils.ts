@@ -1,6 +1,10 @@
-import { getLinkpath, normalizePath, TFile } from 'obsidian'
+import { getLinkpath, normalizePath, TFile, App } from 'obsidian'
 import type { MarkdownSearchFile, SearchFile } from '../suggester/fuzzySearch'
 import { getExtensionFromFilename, getFileTypeFromExtension } from './getFileTypeUtils'
+
+declare global {
+    var app: App;
+}
 
 export function getImageFiles(){
     let fileList: TFile[] = []
@@ -28,6 +32,22 @@ export function getFileAliases(file: TFile): string[]{
     }
 
     return aliases
+}
+
+export function getFileTitle(file: TFile): string | undefined {
+    const frontmatter = app.metadataCache.getFileCache(file)?.frontmatter;
+    if (frontmatter && frontmatter.title) {
+        return frontmatter.title;
+    }
+    return undefined;
+}
+
+export function getFileHeadings(file: TFile): string[] | undefined {
+    const headings = app.metadataCache.getFileCache(file)?.headings;
+    if (headings) {
+        return headings.map(h => h.heading);
+    }
+    return undefined;
 }
 
 export function generateMarkdownSearchFile(file: TFile): MarkdownSearchFile{
@@ -58,6 +78,8 @@ export function generateSearchFile(file: TFile): SearchFile{
         basename: file.basename,
         path: file.path,
         aliases: getFileAliases(file),
+        title: getFileTitle(file),
+        headings: getFileHeadings(file),
         isCreated: true,
         file: file,
         fileType: getFileTypeFromExtension(file.extension),
@@ -97,15 +119,11 @@ export function generateMarkdownUnresolvedFile(cachedFilename: string): SearchFi
 }
 
 export function getUnresolvedMarkdownFiles(): SearchFile[]{
-    // await new Promise<void> ((resolve) => {
-    //     this.app.metadataCache.onCleanCache(() =>{resolve()})
-    // })
-
     const fileList: SearchFile[] = []
     const unresolvedLinkParents = app.metadataCache.unresolvedLinks
     const unresolvedFilenames: string[] = []
-    Object.entries(unresolvedLinkParents).forEach(record => {
-        Object.keys(record[1]).forEach(filename => {
+    Object.entries(unresolvedLinkParents).forEach(([_, links]) => {
+        Object.keys(links).forEach(filename => {
             // md notes does not have any extension, even if the link is [[somefile.md]]
             if(!getExtensionFromFilename(filename) && !unresolvedFilenames.includes(filename)){
                 unresolvedFilenames.push(filename)
@@ -114,14 +132,13 @@ export function getUnresolvedMarkdownFiles(): SearchFile[]{
     })
     unresolvedFilenames.forEach(filename => fileList.push(generateMarkdownUnresolvedFile(filename)))
     return fileList
-
 }
 
 export function getSearchFiles(unresolvedLinks?: boolean): SearchFile[]{
     const files = app.vault.getFiles()
     const fileList: SearchFile[] = []
 
-    files.forEach(f => {
+    files.forEach((f: TFile) => {
         fileList.push(generateSearchFile(f))
     })
 
@@ -133,7 +150,6 @@ export function getSearchFiles(unresolvedLinks?: boolean): SearchFile[]{
 }
 
 export function getParentFolderFromPath(filepath: string): string{
-    // const regexResult = filepath.match(/.*\/([^\/]+)\//)
     const regexResult = filepath.match(/([^\/]+)\/[^\/]+\/*$/)
     return regexResult ? regexResult[1] : '/' 
 }

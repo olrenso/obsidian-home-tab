@@ -27,5 +27,8 @@ data.json
 .npmrc
 .esbuild.config.mjs
 version-bump.mjs
-tsconfig.json
+# tsconfig.json
 versions.json
+
+ref/
+rel/
