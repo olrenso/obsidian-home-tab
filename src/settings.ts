@@ -83,7 +83,7 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     markdownOnly: false,
     unresolvedLinks: false,
     searchTitle: false,
-    searchHeadings: false,
+    searchHeadings: true,
     recentFilesStore: [],
     bookmarkedFileStore: [],
     searchDelay: 0,
